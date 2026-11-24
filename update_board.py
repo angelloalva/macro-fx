@@ -6,11 +6,8 @@ from datetime import datetime, timezone, timedelta
 
 STATE_FILE = "state.json"
 INPUT_PROFE_FILE = "input_profe.json"
-# Limpia espacios, comillas o corchetes accidentales en el Secret de GitHub
 GEMINI_API_KEY = re.sub(r'[\[\]\s"\']', '', os.environ.get("GEMINI_API_KEY", ""))
-
-def clean_url(u):
-    return u.replace("[", "").replace("]", "").strip()
+PROTO = "https" + "://"
 
 def load_json(path, default=None):
     if os.path.exists(path):
@@ -23,7 +20,7 @@ def save_json(path, data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def fetch_yahoo_price(symbol):
-    url = clean_url("https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=2d")
+    url = PROTO + "query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=2d"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -67,13 +64,13 @@ def analyze_and_fetch_data(state, input_data=None):
 
     prompt = f"""
     Eres un analista macroeconómico de Forex. Fecha/hora actual: {fecha_actual}.
-    Analiza las imágenes/notas del profesor (si las hay) Y utiliza Google Search para verificar las cifras reales ya publicadas de los eventos macroeconómicos de esta semana (Semana {state.get("semana", "")}), así como la hora exacta de publicación en UTC de las noticias próximas.
+    Analiza las imágenes/notas del profesor (si las hay) Y utiliza Google Search para buscar las cifras reales exactas ya publicadas de los eventos macroeconómicos de esta semana (Semana {state.get("semana", "")}), así como la hora exacta de publicación en UTC de las noticias próximas.
 
     REGLAS OBLIGATORIAS:
     1. HORA DE PUBLICACIÓN ("fecha_utc"):
        - Para cada noticia en "eventos" con "estado": "proxima", incluye su fecha y hora oficial de publicación en UTC en "fecha_utc" con formato "YYYY-MM-DD HH:MM".
     2. CIFRA REAL EXACTA ("resultado"):
-       - Para toda noticia en "eventos" que ya se haya publicado (incluidos los PMIs del lunes si aún no tienen cifra), busca y escribe el número exacto publicado en "resultado" (ej. "Real: Manuf 52.4 / Serv 51.8 vs 52.1-53.1 esp.") y mantén "estado": "publicada".
+       - Para toda noticia en "eventos" que ya se haya publicado (incluidos los PMIs del lunes: EUR, GBP y USD), busca el dato oficial publicado y escribe el resultado comenzando OBLIGATORIAMENTE con "Real:" seguido de los números exactos (ejemplo: "Real: Manuf 52.4 / Serv 51.8 (vs 52.1-53.1 / 51.1-52.1 esp.)") y mantén "estado": "publicada".
     3. NOTICIAS PRÓXIMAS ("estado": "proxima"):
        - Mantén "color": "blanco" y "resultado": null hasta que salga el dato real.
     4. FILTRO DE RELEVANCIA Y COLORES ("verde", "amarillo", "blanco", "naranja", "rojo"):
@@ -81,14 +78,14 @@ def analyze_and_fetch_data(state, input_data=None):
        - Si es mixto o pista adelantada: "amarillo" o "naranja".
        - Si sorprende fuera de expectación: "verde" o "rojo", añádelo AL FINAL de "riesgos_volatilidad" y marca "muy_relevante": true solo si cambia la postura del Banco Central.
     5. EXPLICACIÓN DEL IMPACTO ("analisis_impacto"):
-       - Explica en 2-3 líneas por qué lleva ese color y su efecto en la divisa y su Banco Central.
+       - Explica en 2-3 líneas por qué lleva ese color (comparando las cifras reales obtenidas contra los límites de expectación) y su efecto en la divisa y su Banco Central.
     6. PIZARRA DERECHA ("divisas" y "volatiles"):
        - Sincroniza colores y etiquetas (RF, V, C.R, (oil)) con las imágenes o indicaciones del profesor.
-    7. Actualiza "ultima_nota_profe" con un resumen ejecutivo limpio (2-3 líneas) de lo analizado.
-    8. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto adicional.
+    7. Actualiza "ultima_nota_profe" con un resumen ejecutivo limpio (2-3 líneas) sin mensajes de error antiguos.
+    8. Devuelve ÚNICAMENTE el objeto JSON completo válido, sin texto antes ni después.
 
     TEXTO DEL PROFESOR:
-    {texto if texto else "Busca y completa las cifras reales exactas de las noticias ya publicadas esta semana y verifica próximas."}
+    {texto if texto else "Busca y completa las cifras reales exactas (empezando con 'Real:') de los PMIs del lunes y de cualquier otra noticia ya publicada esta semana."}
 
     ESTADO ACTUAL DEL TABLERO (JSON):
     {json.dumps(state, ensure_ascii=False)}
@@ -111,7 +108,7 @@ def analyze_and_fetch_data(state, input_data=None):
             }
         })
 
-    api_endpoint = "https" + "://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+    api_endpoint = PROTO + "generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     payload_dict = {
         "contents": [{"parts": parts}],
         "tools": [{"google_search": {}}]
@@ -127,23 +124,25 @@ def analyze_and_fetch_data(state, input_data=None):
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=75) as resp:
+        with urllib.request.urlopen(req, timeout=80) as resp:
             res_json = json.loads(resp.read().decode("utf-8"))
-            raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"].strip()
-            if raw_text.startswith("```"):
-                raw_text = raw_text.strip("`").replace("json\n", "", 1).strip()
-            updated_state = json.loads(raw_text)
-            print("Tablero actualizado con cifras reales y análisis.")
+            candidate_parts = res_json["candidates"][0]["content"]["parts"]
+            full_text = "\n".join(p.get("text", "") for p in candidate_parts if "text" in p).strip()
+            match = re.search(r'\{.*\}', full_text, re.DOTALL)
+            if not match:
+                raise ValueError(f"No se encontró JSON válido en respuesta: {full_text[:200]}")
+            updated_state = json.loads(match.group(0))
+            print("ÉXITO: Tablero actualizado con cifras reales y análisis.")
             return updated_state, True
     except Exception as e:
-        print(f"Error en Gemini: {e}")
-        if texto:
-            state["ultima_nota_profe"] = f"[Error API: {str(e)[:100]}] {texto[:150]}"
+        print(f"ERROR en Gemini: {e}")
+        state["ultima_nota_profe"] = f"[Error API: {str(e)[:140]}]"
         return state, True
 
 def main():
     state = load_json(STATE_FILE)
     if not state:
+        print("No se encontró state.json")
         return
 
     update_volatiles(state)
@@ -162,9 +161,11 @@ def main():
                     break
             except Exception:
                 pass
-        elif ev.get("estado") == "publicada" and not re.search(r"\d", str(ev.get("resultado") or "")):
+        elif ev.get("estado") == "publicada" and "Real:" not in str(ev.get("resultado") or ""):
             hay_noticia_lista = True
             break
+
+    print(f"Diagnóstico ejecución -> hay_input={hay_input}, hay_noticia_lista={hay_noticia_lista}")
 
     if hay_input or hay_noticia_lista:
         state, ok = analyze_and_fetch_data(state, input_data if hay_input else None)
