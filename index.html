@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Macro FX — Tablero Automatizado</title>
+  <style>
+    :root {
+      --bg: #141518;
+      --grid: rgba(255,255,255,0.04);
+      --panel: #1b1d22;
+      --border: #3a3d46;
+      --text: #f0f2f5;
+      --muted: #9aa0ac;
+      --verde: #34d399;
+      --amarillo: #fbbf24;
+      --blanco: #f8fafc;
+      --naranja: #fb923c;
+      --rojo: #f87171;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      margin: 0; background-color: var(--bg); color: var(--text);
+      background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 24px 24px; padding: 16px;
+    }
+    .header {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+      border: 2px solid var(--border); background: var(--panel); padding: 12px 18px; border-radius: 10px; margin-bottom: 16px;
+    }
+    .title { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.5px; }
+    .meta { font-size: 0.82rem; color: var(--muted); }
+    .btn {
+      background: #2b2f3a; color: #fff; border: 1px solid #4b5162; padding: 8px 14px;
+      border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+    }
+    .btn:hover { background: #383e4d; }
+    .btn-primary { background: #2563eb; border-color: #3b82f6; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .layout { display: grid; grid-template-columns: 1fr 310px; gap: 16px; }
+    @media (max-width: 850px) { .layout { grid-template-columns: 1fr; } }
+    .card {
+      background: rgba(27, 29, 34, 0.92); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 16px;
+    }
+    .section-title { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 0 0 12px 0; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .profe-banner {
+      background: rgba(37, 99, 235, 0.12); border-left: 4px solid #3b82f6;
+      padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 0.9rem;
+    }
+    .event-item {
+      border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+      background: #17191e;
+    }
+    .event-top { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+    .event-main { font-weight: 700; font-size: 0.98rem; margin-bottom: 4px; }
+    .event-profe { font-size: 0.84rem; color: #93c5fd; background: rgba(59,130,246,0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+    .fx-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .fx-code { font-weight: 800; font-size: 1.1rem; }
+    .tag { font-size: 0.72rem; background: #2d313c; padding: 2px 6px; border-radius: 4px; margin-left: 4px; color: #cbd5e1; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+    .c-verde { color: var(--verde); } .bg-verde { background: var(--verde); }
+    .c-amarillo { color: var(--amarillo); } .bg-amarillo { background: var(--amarillo); }
+    .c-blanco { color: var(--blanco); } .bg-blanco { background: var(--blanco); }
+    .c-naranja { color: var(--naranja); } .bg-naranja { background: var(--naranja); }
+    .c-rojo { color: var(--rojo); } .bg-rojo { background: var(--rojo); }
+    .vol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .vol-box { background: #141518; border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 0.85rem; }
+    .fv-box { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 0.85rem; }
+    .modal-bg {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      align-items: center; justify-content: center; padding: 16px; z-index: 50;
+    }
+    .modal { background: #1e2028; border: 1px solid #4b5162; border-radius: 10px; max-width: 520px; width: 100%; padding: 20px; }
+    textarea, input[type="text"], input[type="password"] {
+      width: 100%; background: #121317; border: 1px solid #3f4451; color: #fff;
+      padding: 10px; border-radius: 6px; margin-top: 6px; margin-bottom: 12px;
+    }
+    .dropzone {
+      border: 2px dashed #4b5162; border-radius: 8px; padding: 16px; text-align: center;
+      color: var(--muted); cursor: pointer; margin-bottom: 12px; font-size: 0.85rem;
+    }
+    #previewImg { max-width: 100%; max-height: 180px; margin-top: 8px; border-radius: 6px; display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <div class="title" id="tituloSemana">SEMANA 23/11 — MACRO FX</div>
+      <div class="meta" id="ultimaAct">Cargando estado desde GitHub...</div>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button class="btn btn-primary" onclick="abrirModal()">+ Nota / Captura del Profe</button>
+      <button class="btn" onclick="cargarEstado()">↻ Refrescar</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="card">
+      <h3 class="section-title">Calendario & Puntos a Vigilar (Capa 1 / Advertencias)</h3>
+      <div class="profe-banner" id="bannerProfe">
+        <strong>Último apunte del profesor:</strong> <span id="textoProfe">Cargando...</span>
+      </div>
+      <div id="listaEventos"></div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3 class="section-title">Pre Semana (Fuerza vs. Debilidad)</h3>
+        <div id="listaDivisas"></div>
+
+        <h3 class="section-title" style="margin-top:16px;">Volátiles (Capa 2)</h3>
+        <div class="vol-grid" id="gridVolatiles"></div>
+
+        <div class="fv-box" id="panelFV"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="modalProfe">
+    <div class="modal">
+      <h3 style="margin-top:0;">Enviar Apunte o Captura del Profesor</h3>
+      <p style="font-size:0.82rem; color:var(--muted);">
+        Pega el mensaje diario o presiona <strong>Ctrl+V</strong> para pegar una captura de pantalla. La IA extraerá los niveles y actualizará el tablero en ~15 seg.
+      </p>
+
+      <label style="font-size:0.82rem;">Comentario / Mensaje del Profesor:</label>
+      <textarea id="inputTexto" rows="3" placeholder="Ej: Ojo hoy con el PCE de EE.UU., si sale arriba de 0.3% el USD sigue fuerte..."></textarea>
+
+      <div class="dropzone" onclick="document.getElementById('fileInput').click()">
+        Haz clic para subir imagen o pega captura aquí (Ctrl+V)
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="procesarArchivo(this.files[0])" />
+        <img id="previewImg" />
+      </div>
+
+      <details style="margin-bottom:12px; font-size:0.8rem; color:var(--muted);">
+        <summary style="cursor:pointer;">⚙ Configuración única de GitHub (se guarda solo en tu navegador)</summary>
+        <div style="margin-top:8px;">
+          <input type="text" id="ghRepo" placeholder="usuario/nombre-repo (ej. juanperez/macro-fx)" />
+          <input type="password" id="ghToken" placeholder="GitHub Personal Access Token (permiso: Contents Read/Write)" />
+        </div>
+      </details>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" id="btnEnviar" onclick="enviarAGitHub()">Analizar y Actualizar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let imagenBase64 = "";
+
+    async function cargarEstado() {
+      try {
+        const res = await fetch(`state.json?t=${Date.now()}`);
+        const data = await res.json();
+        renderTablero(data);
+      } catch (e) {
+        document.getElementById("ultimaAct").innerText = "Error leyendo state.json. Verifica que esté en la misma carpeta.";
+      }
+    }
+
+    function renderTablero(data) {
+      document.getElementById("tituloSemana").innerText = `SEMANA ${data.semana} — MACRO FX`;
+      document.getElementById("ultimaAct").innerText = `Última actualización automática: ${data.ultima_actualizacion}`;
+      document.getElementById("textoProfe").innerText = data.ultima_nota_profe || "Sin notas recientes.";
+
+      const evContainer = document.getElementById("listaEventos");
+      evContainer.innerHTML = "";
+      data.eventos.forEach(ev => {
+        const resTxt = ev.resultado !== null ? ` | <strong>Real: ${ev.resultado}</strong>` : "";
+        evContainer.innerHTML += `
+          <div class="event-item">
+            <div class="event-top">
+              <span>${ev.dia} • ${ev.hora}</span>
+              <span>${ev.nota}</span>
+            </div>
+            <div class="event-main c-${ev.color}">● [${ev.divisa}] ${ev.titulo} ${resTxt}</div>
+            ${ev.vigilancia_profe ? `<div class="event-profe">👁 ${ev.vigilancia_profe}</div>` : ""}
+          </div>
+        `;
+      });
+
+      const divContainer = document.getElementById("listaDivisas");
+      divContainer.innerHTML = "";
+      data.divisas.forEach(d => {
+        const tagsHtml = (d.tags || []).map(t => `<span class="tag">${t}</span>`).join("");
+        divContainer.innerHTML += `
+          <div class="fx-row" title="${d.motivo}">
+            <div>
+              <span class="fx-code c-${d.color}">${d.code}</span>
+              ${tagsHtml}
+            </div>
+            <span class="dot bg-${d.color}"></span>
+          </div>
+        `;
+      });
+
+      const volContainer = document.getElementById("gridVolatiles");
+      volContainer.innerHTML = "";
+      data.volatiles.forEach(v => {
+        volContainer.innerHTML += `
+          <div class="vol-box">
+            <div style="color:var(--muted); font-size:0.75rem;">${v.nombre}</div>
+            <div class="c-${v.color}" style="font-weight:700; font-size:1rem;">${v.valor} ${v.flecha}</div>
+          </div>
+        `;
+      });
+
+      const fuertes = data.divisas.filter(d => d.color === "verde" || d.color === "amarillo").map(d => d.code);
+      const debiles = data.divisas.filter(d => d.color === "rojo" || d.color === "naranja").map(d => d.code);
+      let pares = [];
+      fuertes.forEach(f => debiles.forEach(d => pares.push(`${f}/${d}`)));
+
+      document.getElementById("panelFV").innerHTML = `
+        <strong>Filtro F.V. Coherente:</strong><br/>
+        <span style="color:var(--verde);">${pares.slice(0, 8).join(" • ") || "Sin divergencia clara"}</span>
+      `;
+    }
+
+    function abrirModal() {
+      document.getElementById("ghRepo").value = localStorage.getItem("ghRepo") || "";
+      document.getElementById("ghToken").value = localStorage.getItem("ghToken") || "";
+      document.getElementById("modalProfe").style.display = "flex";
+    }
+    function cerrarModal() {
+      document.getElementById("modalProfe").style.display = "none";
+    }
+
+    window.addEventListener("paste", e => {
+      if (document.getElementById("modalProfe").style.display !== "flex") return;
+      const items = e.clipboardData.items;
+      for (let item of items) {
+        if (item.type.indexOf("image") !== -1) {
+          procesarArchivo(item.getAsFile());
+        }
+      }
+    });
+
+    function procesarArchivo(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        imagenBase64 = e.target.result;
+        const img = document.getElementById("previewImg");
+        img.src = imagenBase64;
+        img.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function enviarAGitHub() {
+      const repo = document.getElementById("ghRepo").value.trim();
+      const token = document.getElementById("ghToken").value.trim();
+      const texto = document.getElementById("inputTexto").value.trim();
+
+      if (!repo || !token) {
+        alert("Ingresa tu usuario/repositorio y tu Token de GitHub en la configuración.");
+        return;
+      }
+      localStorage.setItem("ghRepo", repo);
+      localStorage.setItem("ghToken", token);
+
+      const btn = document.getElementById("btnEnviar");
+      btn.innerText = "Enviando a GitHub...";
+      btn.disabled = true;
+
+      const apiUrl = `https://api.github.com/repos/${repo}/contents/input_profe.json`;
+      try {
+        let sha = null;
+        const getRes = await fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } });
+        if (getRes.ok) {
+          const existing = await getRes.json();
+          sha = existing.sha;
+        }
+
+        const payloadObj = {
+          procesado: false,
+          timestamp: new Date().toISOString(),
+          texto: texto,
+          imagen_base64: imagenBase64
+        };
+        const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadObj))));
+
+        const putRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: "Nueva nota/imagen del profesor desde tablero web",
+            content: contentB64,
+            ...(sha ? { sha } : {})
+          })
+        });
+
+        if (putRes.ok) {
+          alert("¡Enviado! GitHub Actions está analizando el texto/imagen. Refresca en ~20 segundos.");
+          imagenBase64 = "";
+          document.getElementById("inputTexto").value = "";
+          document.getElementById("previewImg").style.display = "none";
+          cerrarModal();
+          setTimeout(cargarEstado, 22000);
+        } else {
+          alert("Error de permisos en GitHub. Verifica el nombre del repo y que el token tenga permiso 'Contents: Read and write'.");
+        }
+      } catch (err) {
+        alert("Error de conexión con GitHub.");
+      } finally {
+        btn.innerText = "Analizar y Actualizar";
+        btn.disabled = false;
+      }
+    }
+
+    cargarEstado();
+    setInterval(cargarEstado, 60000);
+  </script>
+</body>
+</html>
