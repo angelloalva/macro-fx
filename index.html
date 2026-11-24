@@ -64,12 +64,12 @@
     .vol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
     .vol-box { background: #16171a; border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 0.85rem; }
     .event-item { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: #181a1f; margin-bottom: 10px; }
-    .event-top { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
+    .event-top { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
     .event-main { font-weight: 700; font-size: 0.94rem; margin-bottom: 5px; }
     .rango-pill { font-size: 0.81rem; color: #cbd5e1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); padding: 4px 8px; border-radius: 4px; display: block; margin-top: 4px; }
     .real-pill { font-size: 0.81rem; color: #93c5fd; background: rgba(59,130,246,0.12); padding: 4px 8px; border-radius: 4px; display: block; margin-top: 4px; }
 
-    /* BARRA MANUAL DE SEMÁFORO EN BITÁCORA */
+    /* BARRA MANUAL DE SEMÁFORO Y BOTÓN DE ANÁLISIS */
     .semaforo-bar {
       display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;
       margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.08);
@@ -83,12 +83,17 @@
     .sem-btn.active { border-color: #fff; box-shadow: 0 0 6px rgba(255,255,255,0.6); }
     .star-btn {
       background: #252830; color: var(--muted); border: 1px solid #3f4451; border-radius: 4px;
-      font-size: 0.75rem; padding: 2px 6px; cursor: pointer; font-weight: 700;
+      font-size: 0.74rem; padding: 2px 6px; cursor: pointer; font-weight: 700;
     }
     .star-btn.active { color: #fde047; border-color: #fde047; background: rgba(250,204,21,0.12); }
+    .info-btn {
+      background: #252830; color: #93c5fd; border: 1px solid #3b82f6; border-radius: 4px;
+      font-size: 0.75rem; font-weight: 600; padding: 3px 8px; cursor: pointer;
+    }
+    .info-btn:hover { background: rgba(59,130,246,0.18); }
     .add-nov-btn {
       background: #2563eb; color: #fff; border: none; border-radius: 4px;
-      font-size: 0.76rem; font-weight: 600; padding: 4px 9px; cursor: pointer;
+      font-size: 0.75rem; font-weight: 600; padding: 4px 9px; cursor: pointer;
     }
     .add-nov-btn:hover { background: #1d4ed8; }
 
@@ -141,7 +146,7 @@
   <div class="board">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-        <h3 class="sec-title" style="border:none; margin:0;">Durante Semana (0 → 5 Días: Solo Novedades Relevantes)</h3>
+        <h3 class="sec-title" style="border:none; margin:0;">Durante Semana (0 → 5 Días: Novedades)</h3>
         <div class="scale-bar">
           <span>-</span>
           <span class="dot bg-rojo"></span><span class="dot bg-naranja"></span><span class="dot bg-blanco"></span><span class="dot bg-amarillo"></span><span class="dot bg-verde"></span>
@@ -166,7 +171,7 @@
   <!-- BITÁCORA INFERIOR DIVIDIDA -->
   <div class="bitacora-split">
     <div class="card">
-      <h3 class="sec-title">Próximas Noticias & Límites de Expectación (Neutrales)</h3>
+      <h3 class="sec-title">Próximas Noticias & Límites de Expectación</h3>
       <div id="listaProximas"></div>
     </div>
     <div class="card">
@@ -175,7 +180,7 @@
     </div>
   </div>
 
-  <!-- MODAL -->
+  <!-- MODAL SUBIR NOTAS / CAPTURAS -->
   <div class="modal-bg" id="modalProfe">
     <div class="modal">
       <h3 style="margin-top:0;">Enviar Apunte o Capturas del Profesor</h3>
@@ -198,10 +203,26 @@
     </div>
   </div>
 
+  <!-- MODAL ANÁLISIS E IMPACTO EN DIVISA -->
+  <div class="modal-bg" id="modalAnalisis">
+    <div class="modal">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 id="analisisTitulo" style="margin:0;">Análisis de Impacto</h3>
+        <span id="analisisBadge" style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:4px;"></span>
+      </div>
+      <div id="analisisExpectacion" style="font-size:0.82rem; color:#fde047; margin-bottom:10px;"></div>
+      <div id="analisisResultado" style="font-size:0.84rem; color:#93c5fd; margin-bottom:12px;"></div>
+      <div style="background:#14161a; border:1px solid var(--border); border-radius:8px; padding:12px; font-size:0.9rem; line-height:1.5; color:#e5e7eb;" id="analisisTexto"></div>
+      <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+        <button class="btn btn-primary" onclick="cerrarAnalisis()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let imagenesBase64 = [];
     let currentState = null;
-    let seleccionesManuales = {}; // { idx: { color: 'verde', star: false } }
+    let seleccionesManuales = {};
     const FX_PRIORITY = ["EUR", "GBP", "AUD", "NZD", "USD", "CAD", "CHF", "JPY"];
 
     function formatPair(strong, weak) {
@@ -219,6 +240,29 @@
         document.getElementById("ultimaAct").innerText = "Error leyendo state.json.";
       }
     }
+
+    function abrirAnalisis(idx) {
+      if (!currentState || !currentState.eventos || !currentState.eventos[idx]) return;
+      const ev = currentState.eventos[idx];
+      const colorNames = {
+        verde: "VERDE (Novedad Importante Positiva)",
+        amarillo: "AMARILLO (Novedad Gen. Positiva / Mixta)",
+        blanco: "BLANCO (Pendiente / Sin Desviación)",
+        naranja: "NARANJA (Novedad Gen. Negativa)",
+        rojo: "ROJO (Novedad Importante Negativa)"
+      };
+      document.getElementById("analisisTitulo").innerText = `[${ev.divisa}] ${ev.titulo}`;
+      const badge = document.getElementById("analisisBadge");
+      badge.innerText = colorNames[ev.color] || ev.color.toUpperCase();
+      badge.className = `c-${ev.color}`;
+      badge.style.border = "1px solid currentColor";
+
+      document.getElementById("analisisExpectacion").innerText = ev.rango_expectacion ? `🎯 Límites de Expectación: ${ev.rango_expectacion}` : "";
+      document.getElementById("analisisResultado").innerText = ev.resultado ? `✔ Estado / Resultado: ${ev.resultado}` : "⏳ Dato aún pendiente de publicación.";
+      document.getElementById("analisisTexto").innerText = ev.analisis_impacto || "Sin análisis detallado registrado para este evento. Puedes editarlo o pedirle a la IA que lo evalúe al subir el resultado.";
+      document.getElementById("modalAnalisis").style.display = "flex";
+    }
+    function cerrarAnalisis() { document.getElementById("modalAnalisis").style.display = "none"; }
 
     function seleccionarColor(idx, color) {
       if (!seleccionesManuales[idx]) seleccionesManuales[idx] = { color: "amarillo", star: false };
@@ -249,19 +293,24 @@
       const ev = currentState.eventos[idx];
       const sel = seleccionesManuales[idx] || { color: ev.color !== "blanco" ? ev.color : "amarillo", star: false };
       const detalleInput = prompt(
-        `Añadir [${ev.divisa}] ${ev.titulo} en color ${sel.color.toUpperCase()} al panel de novedades.\n\nEscribe el dato real o nota breve (opcional):`,
-        ev.resultado || ev.rango_expectacion || ""
+        `Añadir [${ev.divisa}] ${ev.titulo} en color ${sel.color.toUpperCase()} debajo de las novedades actuales.\n\nEscribe el resultado o motivo (opcional):`,
+        ev.resultado || ""
       );
-      if (detalleInput === null) return; // Cancelado
+      if (detalleInput === null) return;
 
-      // Actualizar evento en bitácora
+      const explicacionInput = prompt(
+        `¿Por qué lo catalogas en ${sel.color.toUpperCase()} y qué impacto tiene en ${ev.divisa}? (se verá en 'ℹ Análisis'):`,
+        ev.analisis_impacto || `Catalogado manualmente en ${sel.color.toUpperCase()} según comportamiento frente a los límites de expectación (${ev.rango_expectacion || "N/A"}).`
+      );
+
       ev.color = sel.color;
       ev.estado = "publicada";
       if (detalleInput.trim()) ev.resultado = detalleInput.trim();
+      if (explicacionInput && explicacionInput.trim()) ev.analisis_impacto = explicacionInput.trim();
 
-      // Añadir o actualizar en panel superior riesgos_volatilidad
       if (!currentState.riesgos_volatilidad) currentState.riesgos_volatilidad = [];
-      currentState.riesgos_volatilidad.unshift({
+      // .push() añade la novedad DEBAJO de lo que ya está anotado (orden cronológico 0 -> 5 días)
+      currentState.riesgos_volatilidad.push({
         divisa: ev.divisa,
         evento: ev.titulo,
         color: sel.color,
@@ -322,18 +371,20 @@
 
       return `
         <div class="event-item">
-          <div class="event-top"><span>${ev.dia}</span><span>${ev.nota || ""}</span></div>
+          <div class="event-top">
+            <span>${ev.dia}</span>
+            <button type="button" class="info-btn" onclick="abrirAnalisis(${idx})" title="Ver por qué tiene este color y su impacto en ${ev.divisa}">ℹ Impacto ${ev.divisa}</button>
+          </div>
           <div class="event-main c-${colorClase}">● [${ev.divisa}] ${ev.titulo}</div>
           ${rango ? `<span class="rango-pill">🎯 Expectación: ${rango}</span>` : ""}
-          ${ev.resultado ? `<span class="real-pill">✔ Resultado: ${ev.resultado}</span>` : ""}
+          ${ev.resultado ? `<span class="real-pill">✔ ${ev.resultado}</span>` : ""}
           <div class="semaforo-bar">
             <div class="sem-dots" title="Elige color según semáforo">
-              <span style="font-size:0.72rem; color:var(--muted);">Semáforo:</span>
-              <button type="button" id="sem-${idx}-verde" class="sem-btn bg-verde ${activeColor === 'verde' ? 'active' : ''}" onclick="seleccionarColor(${idx}, 'verde')" title="Verde: Novedad Importante Positiva"></button>
-              <button type="button" id="sem-${idx}-amarillo" class="sem-btn bg-amarillo ${activeColor === 'amarillo' ? 'active' : ''}" onclick="seleccionarColor(${idx}, 'amarillo')" title="Amarillo: Gen. Positiva / Pista"></button>
-              <button type="button" id="sem-${idx}-naranja" class="sem-btn bg-naranja ${activeColor === 'naranja' ? 'active' : ''}" onclick="seleccionarColor(${idx}, 'naranja')" title="Naranja: Gen. Negativa / Pista"></button>
-              <button type="button" id="sem-${idx}-rojo" class="sem-btn bg-rojo ${activeColor === 'rojo' ? 'active' : ''}" onclick="seleccionarColor(${idx}, 'rojo')" title="Rojo: Novedad Importante Negativa"></button>
-              <button type="button" id="star-${idx}" class="star-btn ${isStar ? 'active' : ''}" onclick="toggleStar(${idx})" title="Marcar * (Muy relevante)">★ *</button>
+              <button type="button" id="sem-${idx}-verde" class="sem-btn bg-verde ${activeColor === 'verde' ? 'active' : ''}" onclick="seleccionarColor(${idx}, 'verde')" title="Verde: Importante Positiva"></button>
+              <button type="button" id="sem-${idx}-amarillo" class="sem-btn bg-amarillo ${activeColor === 'amarillo' ? 'active' : ''}" onclick="seleccionarColor(${idx}, 'amarillo')" title="Amarillo: Gen. Positiva / Mixta"></button>
+              <button type="button" id="sem-${idx}-naranja" class="sem-btn bg-naranja ${activeColor === 'naranja' ? 'active' : ''}" onclick="seleccionarColor(${idx}, 'naranja')" title="Naranja: Gen. Negativa"></button>
+              <button type="button" id="sem-${idx}-rojo" class="sem-btn bg-rojo ${activeColor === 'rojo' ? 'active' : ''}" onclick="seleccionarColor(${idx}, 'rojo')" title="Rojo: Importante Negativa"></button>
+              <button type="button" id="star-${idx}" class="star-btn ${isStar ? 'active' : ''}" onclick="toggleStar(${idx})" title="Marcar * (Muy relevante para BC)">★ *</button>
             </div>
             <button type="button" class="add-nov-btn" onclick="promoverAPizarra(${idx})">+ Pizarra</button>
           </div>
