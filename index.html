@@ -46,7 +46,7 @@
     .section-title { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 0 0 12px 0; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
     .profe-banner {
       background: rgba(37, 99, 235, 0.12); border-left: 4px solid #3b82f6;
-      padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 0.9rem;
+      padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 0.9rem; line-height: 1.45;
     }
     .event-item {
       border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
@@ -74,16 +74,26 @@
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
       align-items: center; justify-content: center; padding: 16px; z-index: 50;
     }
-    .modal { background: #1e2028; border: 1px solid #4b5162; border-radius: 10px; max-width: 520px; width: 100%; padding: 20px; }
+    .modal { background: #1e2028; border: 1px solid #4b5162; border-radius: 10px; max-width: 540px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto; }
     textarea, input[type="text"], input[type="password"] {
       width: 100%; background: #121317; border: 1px solid #3f4451; color: #fff;
       padding: 10px; border-radius: 6px; margin-top: 6px; margin-bottom: 12px;
     }
     .dropzone {
-      border: 2px dashed #4b5162; border-radius: 8px; padding: 16px; text-align: center;
+      border: 2px dashed #4b5162; border-radius: 8px; padding: 14px; text-align: center;
       color: var(--muted); cursor: pointer; margin-bottom: 12px; font-size: 0.85rem;
     }
-    #previewImg { max-width: 100%; max-height: 180px; margin-top: 8px; border-radius: 6px; display: none; }
+    .dropzone:hover { border-color: #3b82f6; color: #e2e8f0; }
+    .preview-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 8px; margin-top: 10px;
+    }
+    .thumb-wrap { position: relative; border: 1px solid #4b5162; border-radius: 6px; overflow: hidden; background: #121317; }
+    .thumb-wrap img { width: 100%; height: 85px; object-fit: cover; display: block; }
+    .thumb-del {
+      position: absolute; top: 3px; right: 3px; background: rgba(239,68,68,0.9); color: #fff;
+      border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1;
+    }
   </style>
 </head>
 <body>
@@ -94,7 +104,7 @@
       <div class="meta" id="ultimaAct">Cargando estado desde GitHub...</div>
     </div>
     <div style="display:flex; gap:8px; margin-top:8px;">
-      <button class="btn btn-primary" onclick="abrirModal()">+ Nota / Captura del Profe</button>
+      <button class="btn btn-primary" onclick="abrirModal()">+ Nota / Capturas del Profe</button>
       <button class="btn" onclick="cargarEstado()">↻ Refrescar</button>
     </div>
   </div>
@@ -123,24 +133,24 @@
 
   <div class="modal-bg" id="modalProfe">
     <div class="modal">
-      <h3 style="margin-top:0;">Enviar Apunte o Captura del Profesor</h3>
+      <h3 style="margin-top:0;">Enviar Apunte o Capturas del Profesor</h3>
       <p style="font-size:0.82rem; color:var(--muted);">
-        Pega el mensaje diario o presiona <strong>Ctrl+V</strong> para pegar una captura de pantalla. La IA extraerá los niveles y actualizará el tablero en ~15 seg.
+        Pega el mensaje diario y presiona <strong>Ctrl+V</strong> varias veces (o selecciona múltiples archivos) para adjuntar todas las capturas que quieras.
       </p>
 
       <label style="font-size:0.82rem;">Comentario / Mensaje del Profesor:</label>
       <textarea id="inputTexto" rows="3" placeholder="Ej: Ojo hoy con el PCE de EE.UU., si sale arriba de 0.3% el USD sigue fuerte..."></textarea>
 
       <div class="dropzone" onclick="document.getElementById('fileInput').click()">
-        Haz clic para subir imagen o pega captura aquí (Ctrl+V)
-        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="procesarArchivo(this.files[0])" />
-        <img id="previewImg" />
+        Haz clic para subir imágenes o pega capturas aquí (Ctrl+V varias veces)
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="procesarArchivos(this.files)" />
+        <div class="preview-grid" id="previewGrid" onclick="event.stopPropagation()"></div>
       </div>
 
       <details style="margin-bottom:12px; font-size:0.8rem; color:var(--muted);">
         <summary style="cursor:pointer;">⚙ Configuración única de GitHub (se guarda solo en tu navegador)</summary>
         <div style="margin-top:8px;">
-          <input type="text" id="ghRepo" placeholder="usuario/nombre-repo (ej. juanperez/macro-fx)" />
+          <input type="text" id="ghRepo" placeholder="usuario/nombre-repo (ej. angelloalva/macro-fx)" />
           <input type="password" id="ghToken" placeholder="GitHub Personal Access Token (permiso: Contents Read/Write)" />
         </div>
       </details>
@@ -153,7 +163,7 @@
   </div>
 
   <script>
-    let imagenBase64 = "";
+    let imagenesBase64 = [];
 
     async function cargarEstado() {
       try {
@@ -235,23 +245,43 @@
     window.addEventListener("paste", e => {
       if (document.getElementById("modalProfe").style.display !== "flex") return;
       const items = e.clipboardData.items;
+      const archivos = [];
       for (let item of items) {
         if (item.type.indexOf("image") !== -1) {
-          procesarArchivo(item.getAsFile());
+          archivos.push(item.getAsFile());
         }
       }
+      if (archivos.length > 0) procesarArchivos(archivos);
     });
 
-    function procesarArchivo(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        imagenBase64 = e.target.result;
-        const img = document.getElementById("previewImg");
-        img.src = imagenBase64;
-        img.style.display = "block";
-      };
-      reader.readAsDataURL(file);
+    function procesarArchivos(fileList) {
+      Array.from(fileList).forEach(file => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          imagenesBase64.push(e.target.result);
+          renderPreviews();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function eliminarImagen(idx) {
+      imagenesBase64.splice(idx, 1);
+      renderPreviews();
+    }
+
+    function renderPreviews() {
+      const grid = document.getElementById("previewGrid");
+      grid.innerHTML = "";
+      imagenesBase64.forEach((src, i) => {
+        grid.innerHTML += `
+          <div class="thumb-wrap">
+            <img src="${src}" />
+            <button type="button" class="thumb-del" onclick="eliminarImagen(${i})" title="Quitar imagen">×</button>
+          </div>
+        `;
+      });
     }
 
     async function enviarAGitHub() {
@@ -267,59 +297,10 @@
       localStorage.setItem("ghToken", token);
 
       const btn = document.getElementById("btnEnviar");
-      btn.innerText = "Enviando a GitHub...";
+      btn.innerText = `Enviando (${imagenesBase64.length} img)...`;
       btn.disabled = true;
 
       const apiUrl = `https://api.github.com/repos/${repo}/contents/input_profe.json`;
       try {
         let sha = null;
-        const getRes = await fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } });
-        if (getRes.ok) {
-          const existing = await getRes.json();
-          sha = existing.sha;
-        }
-
-        const payloadObj = {
-          procesado: false,
-          timestamp: new Date().toISOString(),
-          texto: texto,
-          imagen_base64: imagenBase64
-        };
-        const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadObj))));
-
-        const putRes = await fetch(apiUrl, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message: "Nueva nota/imagen del profesor desde tablero web",
-            content: contentB64,
-            ...(sha ? { sha } : {})
-          })
-        });
-
-        if (putRes.ok) {
-          alert("¡Enviado! GitHub Actions está analizando el texto/imagen. Refresca en ~20 segundos.");
-          imagenBase64 = "";
-          document.getElementById("inputTexto").value = "";
-          document.getElementById("previewImg").style.display = "none";
-          cerrarModal();
-          setTimeout(cargarEstado, 22000);
-        } else {
-          alert("Error de permisos en GitHub. Verifica el nombre del repo y que el token tenga permiso 'Contents: Read and write'.");
-        }
-      } catch (err) {
-        alert("Error de conexión con GitHub.");
-      } finally {
-        btn.innerText = "Analizar y Actualizar";
-        btn.disabled = false;
-      }
-    }
-
-    cargarEstado();
-    setInterval(cargarEstado, 60000);
-  </script>
-</body>
-</html>
+        const getRes = await fetch(apiUrl, { headers: { Authorization
