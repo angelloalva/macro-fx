@@ -1,0 +1,44 @@
+name: Actualizar Tablero Macro FX
+
+on:
+  push:
+    paths:
+      - 'input_profe.json'
+
+  schedule:
+    - cron: '15 */4 * * 1-5'
+    - cron: '5,35 9 * * 1'
+    - cron: '35 16 * * 2'
+    - cron: '35 0 * * 3'
+    - cron: '32,35 13 * * 3'
+    - cron: '32,35 23 * * 4'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ejecutar analizador y volátiles
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python update_board.py
+
+      - name: Guardar cambios en state.json
+        run: |
+          git config user.name "MacroFX Bot"
+          git config user.email "bot@macrofx.local"
+          git add state.json input_profe.json
+          git diff --staged --quiet || git commit -m "Auto-update tablero Macro FX"
+          git push
