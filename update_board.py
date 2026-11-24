@@ -54,27 +54,28 @@ def update_volatiles(state):
                     v["color"] = "verde" if arrow == "↑" else "rojo"
 
 def analyze_profe_input(state, input_data):
-    """Envía texto e imagen (base64) a Gemini 2.5 Flash para extraer puntos a vigilar y actualizar state.json."""
+    """Envía texto y múltiples imágenes (base64) a Gemini 2.5 Flash para actualizar state.json."""
     if not GEMINI_API_KEY:
-        print("Falta GEMINI_API_KEY en Secrets de GitHub.")
-        return state
+        print("ERROR: Falta GEMINI_API_KEY en Secrets de GitHub.")
+        return state, False
 
     texto = input_data.get("texto", "").strip()
-    imagen_b64 = input_data.get("imagen_base64", "")
+    imagenes = input_data.get("imagenes_base64", [])
+    if not imagenes and input_data.get("imagen_base64"):
+        imagenes = [input_data.get("imagen_base64")]
 
-    if not texto and not imagen_b64:
-        return state
+    if not texto and not imagenes:
+        return state, True
 
     prompt = f"""
-    Eres un analista cuantitativo de Forex. Tu tarea es leer el comentario diario y/o la imagen compartida por el profesor de trading y actualizar el JSON del tablero semanal.
+    Eres un analista cuantitativo de Forex. Lee el comentario diario y TODAS las imágenes/capturas compartidas por el profesor de trading y actualiza el JSON del tablero semanal.
 
-    REGLAS METODOLÓGICAS ESTRICTAS:
+    REGLAS DE ACTUALIZACIÓN:
     1. Escala de colores permitida: "verde", "amarillo", "blanco", "naranja", "rojo".
-    2. Por defecto, los comentarios sobre noticias van en el campo "vigilancia_profe" del evento correspondiente y mantienen "nota": "Advertencia, no cambia sesgo".
-    3. SOLO cambia el "color" de una divisa en el array "divisas" si el profesor indica explícitamente un cambio estructural de Capa 1 (política monetaria o dato macro extremo), y como máximo un escalón.
-    4. Si la imagen contiene una pizarra, tabla o texto con niveles/umbrales (ej. "vigilar 0.3%", "si sale <2.6%"), extráelos y colócalos en "vigilancia_profe" y en "umbral_bajada" o "umbral_subida" del evento.
-    5. Actualiza "ultima_nota_profe" con un resumen ejecutivo de 1-2 líneas de lo que indicó el profesor.
-    6. Devuelve ÚNICAMENTE el JSON completo actualizado y válido, sin bloques markdown (```json) ni texto adicional.
+    2. Actualiza "ultima_nota_profe" con un resumen ejecutivo claro (2-3 líneas) integrando lo que dicen el texto y todas las imágenes (pizarras, gráficos, noticias).
+    3. Si las imágenes o el texto indican cambios de sesgo o colores en la columna Pre Semana (ej. pizarras de divisas con colores verde/amarillo/blanco/naranja/rojo, o divisas favorecidas como GBP o USD), actualiza el "color", "tags" y el "motivo" de esas divisas en el array "divisas".
+    4. Si mencionan puntos a vigilar sobre eventos de la semana, añádelos en "vigilancia_profe" del evento correspondiente manteniendo "nota": "Advertencia, no cambia sesgo" salvo que indique cambio estructural.
+    5. Devuelve ÚNICAMENTE el JSON completo actualizado y válido, sin bloques markdown (```json) ni texto adicional.
 
     TEXTO DEL PROFESOR:
     {texto}
@@ -84,12 +85,14 @@ def analyze_profe_input(state, input_data):
     """
 
     parts = [{"text": prompt}]
-    if imagen_b64:
-        if "," in imagen_b64:
-            mime_part, b64_clean = imagen_b64.split(",", 1)
+    for img_b64 in imagenes:
+        if not img_b64:
+            continue
+        if "," in img_b64:
+            mime_part, b64_clean = img_b64.split(",", 1)
             mime_type = mime_part.split(":")[1].split(";")[0]
         else:
-            b64_clean = imagen_b64
+            b64_clean = img_b64
             mime_type = "image/jpeg"
         parts.append({
             "inline_data": {
@@ -98,23 +101,23 @@ def analyze_profe_input(state, input_data):
             }
         })
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=){GEMINI_API_KEY}"
     payload = json.dumps({"contents": [{"parts": parts}]}).encode("utf-8")
     req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
 
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             res_json = json.loads(resp.read().decode("utf-8"))
             raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"].strip()
             if raw_text.startswith("```"):
                 raw_text = raw_text.strip("`").replace("json\n", "", 1).strip()
             updated_state = json.loads(raw_text)
-            print("Tablero actualizado exitosamente con análisis de Gemini.")
-            return updated_state
+            print(f"Tablero actualizado exitosamente con {len(imagenes)} imágenes y texto.")
+            return updated_state, True
     except Exception as e:
         print(f"Error analizando con Gemini: {e}")
-        state["ultima_nota_profe"] = f"[Error IA, nota guardada]: {texto[:120]}"
-        return state
+        state["ultima_nota_profe"] = f"[Error API Gemini: {str(e)[:100]}] {texto[:150]}"
+        return state, True
 
 def main():
     state = load_json(STATE_FILE)
@@ -125,10 +128,12 @@ def main():
 
     input_data = load_json(INPUT_PROFE_FILE, {"procesado": True})
     if input_data and not input_data.get("procesado", True):
-        state = analyze_profe_input(state, input_data)
-        input_data["procesado"] = True
-        input_data["imagen_base64"] = ""
-        save_json(INPUT_PROFE_FILE, input_data)
+        state, ok = analyze_profe_input(state, input_data)
+        if ok:
+            input_data["procesado"] = True
+            input_data["imagenes_base64"] = []
+            input_data.pop("imagen_base64", None)
+            save_json(INPUT_PROFE_FILE, input_data)
 
     lima_tz = timezone(timedelta(hours=-5))
     state["ultima_actualizacion"] = datetime.now(lima_tz).strftime("%Y-%m-%d %H:%M Lima")
