@@ -66,13 +66,12 @@ def analyze_profe_input(state, input_data):
     REGLAS ESTRICTAS DE METODOLOGÍA:
     1. Colores permitidos únicamente: "verde", "amarillo", "blanco", "naranja", "rojo".
     2. NOTICIAS PRÓXIMAS ("estado": "proxima"):
-       - TODA noticia que aún no se publica DEBE tener "color": "blanco" (neutral). Nunca les pongas verde, amarillo, naranja o rojo antes de que salgan.
-    3. FILTRO DE RELEVANCIA AL PUBLICARSE UN DATO ("estado": "publicada"):
-       - Dato IRRELEVANTE / En línea con expectación: NO lo agregues a la pizarra superior ("riesgos_volatilidad"). Muévelo a "publicada" en "eventos" con "color": "blanco" y en "resultado" indica que salió en línea / sin relevancia para el Banco Central.
-       - ENCUESTAS / INDICADORES ADELANTADOS (ej. PMIs, confianza): Los bancos centrales no los miran con lupa, pero sirven como pista adelantada. Si el profesor los destaca, agrégalos en "riesgos_volatilidad" con color suave ("amarillo" si pista positiva, "naranja" si pista negativa) y aclara en "detalle" que es encuesta/pista adelantada (no cambia sesgo BC).
-       - DATO DURO RELEVANTE (IPC, PCE, Empleo, PIB, Retail Sales) fuera de expectación: Agrégalo a "riesgos_volatilidad" con "color": "verde" (sorpresa positiva fuerte) o "rojo" (sorpresa negativa fuerte), poniendo "muy_relevante": true (asterisco *) solo si es crítico para el Banco Central.
-    4. TABLAS DE LÍMITES DE EXPECTACIÓN:
-       - Si suben una tabla de "LÍMITES DE EXPECTACIÓN", extrae todas las noticias de Lunes a Viernes en "eventos" con su rango en "rango_expectacion", "estado": "proxima" y "color": "blanco".
+       - Van en "color": "blanco" y sin etiqueta "Neutral". Incluyen su rango en "rango_expectacion" y en "analisis_impacto" explica brevemente qué vigilar según la política del Banco Central de esa divisa.
+    3. ORDEN CRONOLÓGICO EN PIZARRA ("riesgos_volatilidad"):
+       - Cada nueva novedad relevante DEBE agregarse AL FINAL de la lista "riesgos_volatilidad" (debajo de las ya existentes, respetando la línea temporal 0 -> 5 días), nunca encima.
+       - Usa "muy_relevante": true (asterisco *) únicamente cuando el dato sea crítico para el Banco Central o cambie el sesgo estructural.
+    4. EXPLICACIÓN DEL COLOR ("analisis_impacto"):
+       - En cada evento de "eventos", completa el campo "analisis_impacto" (2-4 líneas) explicando por qué se catalogó con ese color (comparando cifra real vs. límites de expectación) y qué impacto concreto tiene sobre la divisa y las expectativas de tasas de su Banco Central.
     5. PIZARRA DERECHA ("divisas" y "volatiles"):
        - Sincroniza los colores y etiquetas (RF, V, C.R, (oil)) exactamente con la pizarra o indicaciones del profesor.
     6. Actualiza "ultima_nota_profe" con un resumen ejecutivo (2-3 líneas).
