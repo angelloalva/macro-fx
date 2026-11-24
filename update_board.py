@@ -1,11 +1,11 @@
 import os
+import re
 import json
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
 STATE_FILE = "state.json"
 INPUT_PROFE_FILE = "input_profe.json"
-CRON_FILE = ".github/workflows/cron.yml"
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
 def load_json(path, default=None):
@@ -48,73 +48,6 @@ def update_volatiles(state):
                 v["valor"] = f"{prefix}{price}"
                 v["flecha"] = arrow
 
-def sync_cron_schedule(state):
-    """Genera disparadores cron exactos (hora de publicación UTC + 10 minutos) solo para noticias pendientes."""
-    cron_lines = []
-    seen = set()
-    now_utc = datetime.now(timezone.utc)
-
-    for ev in state.get("eventos", []):
-        if ev.get("estado") != "proxima":
-            continue
-        fecha_utc_str = ev.get("fecha_utc")  # Ej: "2026-11-25 00:30"
-        if not fecha_utc_str:
-            continue
-        try:
-            dt = datetime.strptime(fecha_utc_str, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
-            run_dt = dt + timedelta(minutes=10)
-            if run_dt > now_utc:
-                expr = f"{run_dt.minute} {run_dt.hour} {run_dt.day} {run_dt.month} *"
-                if expr not in seen:
-                    seen.add(expr)
-                    cron_lines.append(f"    - cron: '{expr}' # [{ev.get('divisa')}] {ev.get('titulo')}")
-        except Exception as e:
-            print(f"Error parseando fecha_utc {fecha_utc_str}: {e}")
-
-    schedule_block = "  schedule:\n" + ("\n".join(cron_lines) if cron_lines else "    # Sin noticias pendientes esta semana")
-
-    yml_content = f"""name: Actualizar Tablero Macro FX
-
-on:
-  push:
-    paths:
-      - 'input_profe.json'
-  workflow_dispatch:
-{schedule_block}
-
-permissions:
-  contents: write
-
-jobs:
-  update:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repositorio
-        uses: actions/checkout@v4
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Ejecutar analizador y volátiles
-        env:
-          GEMINI_API_KEY: ${{{{ secrets.GEMINI_API_KEY }}}}
-        run: python update_board.py
-
-      - name: Guardar cambios en state.json y cron.yml
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add state.json input_profe.json .github/workflows/cron.yml
-          git diff --quiet && git diff --staged --quiet || git commit -m "Actualización automática Macro FX [skip ci]"
-          git push
-"""
-    os.makedirs(os.path.dirname(CRON_FILE), exist_ok=True)
-    with open(CRON_FILE, "w", encoding="utf-8") as f:
-        f.write(yml_content)
-    print(f"Cron actualizado con {len(cron_lines)} tareas programadas (+10 min post-noticia).")
-
 def analyze_and_fetch_data(state, input_data=None):
     if not GEMINI_API_KEY:
         print("ERROR: Falta GEMINI_API_KEY en Secrets de GitHub.")
@@ -134,15 +67,15 @@ def analyze_and_fetch_data(state, input_data=None):
 
     REGLAS OBLIGATORIAS:
     1. HORA DE PUBLICACIÓN ("fecha_utc"):
-       - Para cada noticia en "eventos" con "estado": "proxima", incluye su fecha y hora oficial de publicación en UTC en el campo "fecha_utc" con formato exacto "YYYY-MM-DD HH:MM" (por ejemplo, 19:30 Lima del martes es "2026-11-25 00:30" UTC; 08:30 Lima del miércoles es "2026-11-25 13:30" UTC). Esto programa el cron automáticamente 10 minutos después.
+       - Para cada noticia en "eventos" con "estado": "proxima", incluye su fecha y hora oficial de publicación en UTC en "fecha_utc" con formato "YYYY-MM-DD HH:MM".
     2. CIFRA REAL EXACTA ("resultado"):
-       - Para toda noticia en "eventos" que ya se haya publicado, escribe el número exacto publicado en "resultado" (ej. "Real: 4.8% vs 4.7%-4.8% esp.") y cambia su "estado" a "publicada".
+       - Para toda noticia en "eventos" que ya se haya publicado (incluidos los PMIs del lunes si aún no tienen cifra), busca y escribe el número exacto publicado en "resultado" (ej. "Real: Manuf 52.4 / Serv 51.8 vs 52.1-53.1 esp.") y mantén "estado": "publicada".
     3. NOTICIAS PRÓXIMAS ("estado": "proxima"):
        - Mantén "color": "blanco" y "resultado": null hasta que salga el dato real.
     4. FILTRO DE RELEVANCIA Y COLORES ("verde", "amarillo", "blanco", "naranja", "rojo"):
        - Si sale dentro de expectación: "color": "blanco" en bitácora y NO lo agregues a "riesgos_volatilidad".
        - Si es mixto o pista adelantada: "amarillo" o "naranja".
-       - Si sorprende fuera de expectación: "verde" o "rojo", añádelo AL FINAL de "riesgos_volatilidad" (debajo de las existentes) y marca "muy_relevante": true solo si cambia la postura del Banco Central.
+       - Si sorprende fuera de expectación: "verde" o "rojo", añádelo AL FINAL de "riesgos_volatilidad" y marca "muy_relevante": true solo si cambia la postura del Banco Central.
     5. EXPLICACIÓN DEL IMPACTO ("analisis_impacto"):
        - Explica en 2-3 líneas por qué lleva ese color y su efecto en la divisa y su Banco Central.
     6. PIZARRA DERECHA ("divisas" y "volatiles"):
@@ -150,7 +83,7 @@ def analyze_and_fetch_data(state, input_data=None):
     7. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto adicional.
 
     TEXTO DEL PROFESOR:
-    {texto if texto else "Verifica resultados macro publicados recientemente y horarios UTC de próximas noticias."}
+    {texto if texto else "Busca y completa las cifras reales exactas de las noticias ya publicadas esta semana y verifica próximas."}
 
     ESTADO ACTUAL DEL TABLERO (JSON):
     {json.dumps(state, ensure_ascii=False)}
@@ -188,7 +121,7 @@ def analyze_and_fetch_data(state, input_data=None):
             if raw_text.startswith("```"):
                 raw_text = raw_text.strip("`").replace("json\n", "", 1).strip()
             updated_state = json.loads(raw_text)
-            print("Tablero actualizado con cifras reales y horarios UTC (+10m).")
+            print("Tablero actualizado con cifras reales y análisis.")
             return updated_state, True
     except Exception as e:
         print(f"Error en Gemini: {e}")
@@ -217,6 +150,9 @@ def main():
                     break
             except Exception:
                 pass
+        elif ev.get("estado") == "publicada" and not re.search(r"\d", str(ev.get("resultado") or "")):
+            hay_noticia_lista = True
+            break
 
     if hay_input or hay_noticia_lista:
         state, ok = analyze_and_fetch_data(state, input_data if hay_input else None)
@@ -225,8 +161,6 @@ def main():
             input_data["imagenes_base64"] = []
             input_data.pop("imagen_base64", None)
             save_json(INPUT_PROFE_FILE, input_data)
-
-    sync_cron_schedule(state)
 
     lima_tz = timezone(timedelta(hours=-5))
     state["ultima_actualizacion"] = datetime.now(lima_tz).strftime("%Y-%m-%d %H:%M Lima")
