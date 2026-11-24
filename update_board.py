@@ -61,18 +61,22 @@ def analyze_profe_input(state, input_data):
         return state, True
 
     prompt = f"""
-    Eres un analista cuantitativo de Forex. Analiza el mensaje y TODAS las imágenes enviadas por el profesor (pizarras de sesgos, capturas de resultados o tablas de "LÍMITES DE EXPECTACIÓN / Rango de Consenso") para actualizar el JSON del tablero.
+    Eres un analista macroeconómico de Forex. Analiza el mensaje y TODAS las imágenes enviadas por el profesor (pizarras, tablas de "LÍMITES DE EXPECTACIÓN", o resultados de noticias) y actualiza el JSON del tablero.
 
-    REGLAS DE ACTUALIZACIÓN:
+    REGLAS ESTRICTAS DE METODOLOGÍA:
     1. Colores permitidos únicamente: "verde", "amarillo", "blanco", "naranja", "rojo".
-    2. Si alguna imagen es una tabla de "LÍMITES DE EXPECTACIÓN / Rango de Consenso":
-       - Extrae TODAS las noticias relevantes de cada día (Lunes a Viernes) con su divisa, título y rango exacto en "rango_expectacion".
-       - Coloca "estado": "proxima" para noticias futuras y "estado": "publicada" para días/noticias que ya salieron o tienen resultado.
-    3. Si el profesor reporta el resultado de una noticia que ya salió:
-       - Cambia su "estado" a "publicada" en "eventos", anota el dato real en "resultado" (comparándolo con su "rango_expectacion") y agrégalo también en "riesgos_volatilidad" si está en la pizarra del día.
-    4. Sincroniza "riesgos_volatilidad", "divisas" ("Pre Semana") y "volatiles" con lo que muestre la pizarra o diga el profesor.
-    5. Actualiza "ultima_nota_profe" con un resumen ejecutivo (2-3 líneas).
-    6. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto extra.
+    2. NOTICIAS PRÓXIMAS ("estado": "proxima"):
+       - TODA noticia que aún no se publica DEBE tener "color": "blanco" (neutral). Nunca les pongas verde, amarillo, naranja o rojo antes de que salgan.
+    3. FILTRO DE RELEVANCIA AL PUBLICARSE UN DATO ("estado": "publicada"):
+       - Dato IRRELEVANTE / En línea con expectación: NO lo agregues a la pizarra superior ("riesgos_volatilidad"). Muévelo a "publicada" en "eventos" con "color": "blanco" y en "resultado" indica que salió en línea / sin relevancia para el Banco Central.
+       - ENCUESTAS / INDICADORES ADELANTADOS (ej. PMIs, confianza): Los bancos centrales no los miran con lupa, pero sirven como pista adelantada. Si el profesor los destaca, agrégalos en "riesgos_volatilidad" con color suave ("amarillo" si pista positiva, "naranja" si pista negativa) y aclara en "detalle" que es encuesta/pista adelantada (no cambia sesgo BC).
+       - DATO DURO RELEVANTE (IPC, PCE, Empleo, PIB, Retail Sales) fuera de expectación: Agrégalo a "riesgos_volatilidad" con "color": "verde" (sorpresa positiva fuerte) o "rojo" (sorpresa negativa fuerte), poniendo "muy_relevante": true (asterisco *) solo si es crítico para el Banco Central.
+    4. TABLAS DE LÍMITES DE EXPECTACIÓN:
+       - Si suben una tabla de "LÍMITES DE EXPECTACIÓN", extrae todas las noticias de Lunes a Viernes en "eventos" con su rango en "rango_expectacion", "estado": "proxima" y "color": "blanco".
+    5. PIZARRA DERECHA ("divisas" y "volatiles"):
+       - Sincroniza los colores y etiquetas (RF, V, C.R, (oil)) exactamente con la pizarra o indicaciones del profesor.
+    6. Actualiza "ultima_nota_profe" con un resumen ejecutivo (2-3 líneas).
+    7. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto extra.
 
     TEXTO DEL PROFESOR:
     {texto}
@@ -100,7 +104,7 @@ def analyze_profe_input(state, input_data):
 
     api_endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=)" + GEMINI_API_KEY
     payload = json.dumps({"contents": [{"parts": parts}]}).encode("utf-8")
-    req = urllib.request.Request(api_endpoint, data=payload, headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(url=api_endpoint, data=payload, headers={"Content-Type": "application/json"})
 
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
