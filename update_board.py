@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 STATE_FILE = "state.json"
 INPUT_PROFE_FILE = "input_profe.json"
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 
 def load_json(path, default=None):
     if os.path.exists(path):
@@ -18,8 +18,7 @@ def save_json(path, data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def fetch_yahoo_price(symbol):
-    """Consulta precio actual y variación diaria desde Yahoo Finance público."""
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=2d"
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=2d"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -35,9 +34,8 @@ def fetch_yahoo_price(symbol):
     return None, None
 
 def update_volatiles(state):
-    """Actualiza Capa 2 (VIX, Crudo WTI, Cobre) automáticamente."""
     mapping = {
-        "VIX": ("^VIX", "$"),
+        "VIX": ("^VIX", ""),
         "Crudo": ("CL=F", "$"),
         "MPD": ("HG=F", "$")
     }
@@ -46,15 +44,10 @@ def update_volatiles(state):
             sym, prefix = mapping[v["id"]]
             price, arrow = fetch_yahoo_price(sym)
             if price is not None:
-                v["valor"] = f"{prefix}{price}" if prefix == "$" and v["id"] != "VIX" else f"{price}"
+                v["valor"] = f"{prefix}{price}"
                 v["flecha"] = arrow
-                if v["id"] == "VIX":
-                    v["color"] = "verde" if price >= 25 else ("amarillo" if price >= 18 else "rojo")
-                elif v["id"] == "MPD":
-                    v["color"] = "verde" if arrow == "↑" else "rojo"
 
 def analyze_profe_input(state, input_data):
-    """Envía texto y múltiples imágenes (base64) a Gemini 2.5 Flash para actualizar state.json."""
     if not GEMINI_API_KEY:
         print("ERROR: Falta GEMINI_API_KEY en Secrets de GitHub.")
         return state, False
@@ -68,14 +61,15 @@ def analyze_profe_input(state, input_data):
         return state, True
 
     prompt = f"""
-    Eres un analista cuantitativo de Forex. Lee el comentario diario y TODAS las imágenes/capturas compartidas por el profesor de trading y actualiza el JSON del tablero semanal.
+    Eres un analista cuantitativo de Forex. Analiza el comentario diario y TODAS las imágenes (pizarras) del profesor de trading para actualizar el JSON del tablero.
 
     REGLAS DE ACTUALIZACIÓN:
-    1. Escala de colores permitida: "verde", "amarillo", "blanco", "naranja", "rojo".
-    2. Actualiza "ultima_nota_profe" con un resumen ejecutivo claro (2-3 líneas) integrando lo que dicen el texto y todas las imágenes (pizarras, gráficos, noticias).
-    3. Si las imágenes o el texto indican cambios de sesgo o colores en la columna Pre Semana (ej. pizarras de divisas con colores verde/amarillo/blanco/naranja/rojo, o divisas favorecidas como GBP o USD), actualiza el "color", "tags" y el "motivo" de esas divisas en el array "divisas".
-    4. Si mencionan puntos a vigilar sobre eventos de la semana, añádelos en "vigilancia_profe" del evento correspondiente manteniendo "nota": "Advertencia, no cambia sesgo" salvo que indique cambio estructural.
-    5. Devuelve ÚNICAMENTE el JSON completo actualizado y válido, sin bloques markdown (```json) ni texto adicional.
+    1. Colores válidos únicamente: "verde", "amarillo", "blanco", "naranja", "rojo".
+    2. Actualiza "riesgos_volatilidad" (panel izquierdo principal de la pizarra) extrayendo cada línea que escribe el profesor en su pizarra (ej. divisa: "NZD", evento: "Retail Sales", color: "verde", detalle: "Resultado o punto a vigilar"). Si salen nuevos datos o resultados en el día, añádelos o actualízalos allí con su resultado.
+    3. Sincroniza la columna derecha "divisas" ("Pre Semana") exactamente con los colores y etiquetas (RF, V, C.R, (oil)) que muestra la pizarra o indica el profesor.
+    4. Sincroniza "volatiles" (MPD, MPB, Crudo, VIX) con los colores y flechas que indique el profesor.
+    5. Actualiza "ultima_nota_profe" con un resumen ejecutivo (2-3 líneas) y añade una entrada al inicio de "bitacora_eventos" con fecha/hora, título y detalle.
+    6. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto adicional.
 
     TEXTO DEL PROFESOR:
     {texto}
@@ -101,9 +95,9 @@ def analyze_profe_input(state, input_data):
             }
         })
 
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=){GEMINI_API_KEY}"
+    api_endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=)" + GEMINI_API_KEY
     payload = json.dumps({"contents": [{"parts": parts}]}).encode("utf-8")
-    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(api_endpoint, data=payload, headers={"Content-Type": "application/json"})
 
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -112,11 +106,11 @@ def analyze_profe_input(state, input_data):
             if raw_text.startswith("```"):
                 raw_text = raw_text.strip("`").replace("json\n", "", 1).strip()
             updated_state = json.loads(raw_text)
-            print(f"Tablero actualizado exitosamente con {len(imagenes)} imágenes y texto.")
+            print("Tablero actualizado exitosamente con Gemini.")
             return updated_state, True
     except Exception as e:
         print(f"Error analizando con Gemini: {e}")
-        state["ultima_nota_profe"] = f"[Error API Gemini: {str(e)[:100]}] {texto[:150]}"
+        state["ultima_nota_profe"] = f"[Error API Gemini: {str(e)[:120]}] {texto[:150]}"
         return state, True
 
 def main():
