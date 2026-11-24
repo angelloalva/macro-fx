@@ -1,7 +1,7 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-23 23:16 Lima",
-  "ultima_nota_profe": "Pizarra Semana 23/11 y Límites de Expectación cargados. PMIs del lunes catalogados en amarillo por lecturas mixtas; foco en próximos datos duros de AUD, USD y JPY.",
+  "ultima_actualizacion": "2026-11-23 23:54 Lima",
+  "ultima_nota_profe": "[Error API: <urlopen error unknown url type: [https>] Busca en Google Search los resultados reales exactos publicados hoy lunes 23 de noviembre para los PMIs Flash de Manufactura y Servicios de Eurozona (",
   "riesgos_volatilidad": [
     {
       "divisa": "NZD",
@@ -19,20 +19,92 @@
     }
   ],
   "divisas": [
-    { "code": "GBP", "color": "verde", "tags": ["RF"], "motivo": "Pizarra Profe: Compra [RF]." },
-    { "code": "JPY", "color": "verde", "tags": ["V"], "motivo": "Pizarra Profe: Compra [V]." },
-    { "code": "USD", "color": "verde", "tags": [], "motivo": "Pizarra Profe: Compra." },
-    { "code": "NZD", "color": "blanco", "tags": [], "motivo": "Pizarra Profe: Neutral." },
-    { "code": "EUR", "color": "blanco", "tags": [], "motivo": "Pizarra Profe: Neutral." },
-    { "code": "CAD", "color": "naranja", "tags": ["(oil)"], "motivo": "Pizarra Profe: Pref. Venta [(oil)]." },
-    { "code": "AUD", "color": "naranja", "tags": [], "motivo": "Pizarra Profe: Pref. Venta." },
-    { "code": "CHF", "color": "rojo", "tags": ["C.R"], "motivo": "Pizarra Profe: Venta [C.R]." }
+    {
+      "code": "GBP",
+      "color": "verde",
+      "tags": [
+        "RF"
+      ],
+      "motivo": "Pizarra Profe: Compra [RF]."
+    },
+    {
+      "code": "JPY",
+      "color": "verde",
+      "tags": [
+        "V"
+      ],
+      "motivo": "Pizarra Profe: Compra [V]."
+    },
+    {
+      "code": "USD",
+      "color": "verde",
+      "tags": [],
+      "motivo": "Pizarra Profe: Compra."
+    },
+    {
+      "code": "NZD",
+      "color": "blanco",
+      "tags": [],
+      "motivo": "Pizarra Profe: Neutral."
+    },
+    {
+      "code": "EUR",
+      "color": "blanco",
+      "tags": [],
+      "motivo": "Pizarra Profe: Neutral."
+    },
+    {
+      "code": "CAD",
+      "color": "naranja",
+      "tags": [
+        "(oil)"
+      ],
+      "motivo": "Pizarra Profe: Pref. Venta [(oil)]."
+    },
+    {
+      "code": "AUD",
+      "color": "naranja",
+      "tags": [],
+      "motivo": "Pizarra Profe: Pref. Venta."
+    },
+    {
+      "code": "CHF",
+      "color": "rojo",
+      "tags": [
+        "C.R"
+      ],
+      "motivo": "Pizarra Profe: Venta [C.R]."
+    }
   ],
   "volatiles": [
-    { "id": "MPD", "nombre": "MPD", "valor": "$5.509", "flecha": "↓", "color": "rojo" },
-    { "id": "MPB", "nombre": "MPB", "valor": "127.66", "flecha": "↓", "color": "amarillo" },
-    { "id": "Crudo", "nombre": "Crudo", "valor": "$80.01", "flecha": "↓", "color": "amarillo" },
-    { "id": "VIX", "nombre": "VIX", "valor": "26.62", "flecha": "↓", "color": "amarillo" }
+    {
+      "id": "MPD",
+      "nombre": "MPD",
+      "valor": "$5.507",
+      "flecha": "↓",
+      "color": "rojo"
+    },
+    {
+      "id": "MPB",
+      "nombre": "MPB",
+      "valor": "127.66",
+      "flecha": "↓",
+      "color": "amarillo"
+    },
+    {
+      "id": "Crudo",
+      "nombre": "Crudo",
+      "valor": "$79.67",
+      "flecha": "↓",
+      "color": "amarillo"
+    },
+    {
+      "id": "VIX",
+      "nombre": "VIX",
+      "valor": "26.62",
+      "flecha": "↓",
+      "color": "amarillo"
+    }
   ],
   "eventos": [
     {
