@@ -1,6 +1,6 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-23 21:15 Lima",
+  "ultima_actualizacion": "2026-11-23 21:22 Lima",
   "ultima_nota_profe": "Sin notas diarias cargadas aún.",
   "divisas": [
     {
@@ -73,7 +73,7 @@
     {
       "id": "MPD",
       "nombre": "MPD (Cobre)",
-      "valor": "$5.534",
+      "valor": "$5.561",
       "flecha": "↓",
       "color": "rojo"
     },
@@ -87,7 +87,7 @@
     {
       "id": "Crudo",
       "nombre": "Crudo (WTI)",
-      "valor": "$79.98",
+      "valor": "$80.01",
       "flecha": "↓",
       "color": "amarillo"
     },
