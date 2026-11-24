@@ -7,6 +7,7 @@ from datetime import datetime, timezone, timedelta
 STATE_FILE = "state.json"
 INPUT_PROFE_FILE = "input_profe.json"
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+PROTO = "https" + "://"
 
 def load_json(path, default=None):
     if os.path.exists(path):
@@ -19,7 +20,7 @@ def save_json(path, data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def fetch_yahoo_price(symbol):
-    url = "https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=2d"
+    url = PROTO + "query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=2d"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -80,7 +81,8 @@ def analyze_and_fetch_data(state, input_data=None):
        - Explica en 2-3 líneas por qué lleva ese color y su efecto en la divisa y su Banco Central.
     6. PIZARRA DERECHA ("divisas" y "volatiles"):
        - Sincroniza colores y etiquetas (RF, V, C.R, (oil)) con las imágenes o indicaciones del profesor.
-    7. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto adicional.
+    7. Actualiza "ultima_nota_profe" con un resumen ejecutivo limpio (2-3 líneas) de lo analizado.
+    8. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto adicional.
 
     TEXTO DEL PROFESOR:
     {texto if texto else "Busca y completa las cifras reales exactas de las noticias ya publicadas esta semana y verifica próximas."}
@@ -106,7 +108,7 @@ def analyze_and_fetch_data(state, input_data=None):
             }
         })
 
-    api_endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=)" + GEMINI_API_KEY
+    api_endpoint = PROTO + "[generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=)" + GEMINI_API_KEY
     payload_dict = {
         "contents": [{"parts": parts}],
         "tools": [{"google_search": {}}]
