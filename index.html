@@ -284,7 +284,7 @@
       });
     }
 
-    async function enviarAGitHub() {
+ async function enviarAGitHub() {
       const repo = document.getElementById("ghRepo").value.trim();
       const token = document.getElementById("ghToken").value.trim();
       const texto = document.getElementById("inputTexto").value.trim();
@@ -303,4 +303,53 @@
       const apiUrl = `https://api.github.com/repos/${repo}/contents/input_profe.json`;
       try {
         let sha = null;
-        const getRes = await fetch(apiUrl, { headers: { Authorization
+        const getRes = await fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } });
+        if (getRes.ok) {
+          const existing = await getRes.json();
+          sha = existing.sha;
+        }
+
+        const payloadObj = {
+          procesado: false,
+          timestamp: new Date().toISOString(),
+          texto: texto,
+          imagenes_base64: imagenesBase64
+        };
+        const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(payloadObj))));
+
+        const putRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: `Nueva nota (${imagenesBase64.length} imágenes) del profesor`,
+            content: contentB64,
+            ...(sha ? { sha } : {})
+          })
+        });
+
+        if (putRes.ok) {
+          alert("¡Enviado! GitHub Actions está analizando el texto e imágenes. Refresca en ~25 segundos.");
+          imagenesBase64 = [];
+          renderPreviews();
+          document.getElementById("inputTexto").value = "";
+          cerrarModal();
+          setTimeout(cargarEstado, 25000);
+        } else {
+          alert("Error de permisos en GitHub. Verifica el nombre del repo y que el token tenga permiso 'Contents: Read and write'.");
+        }
+      } catch (err) {
+        alert("Error de conexión con GitHub.");
+      } finally {
+        btn.innerText = "Analizar y Actualizar";
+        btn.disabled = false;
+      }
+    }
+
+    cargarEstado();
+    setInterval(cargarEstado, 60000);
+  </script>
+</body>
+</html>
