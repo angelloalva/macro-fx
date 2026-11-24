@@ -1,7 +1,7 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-23 21:22 Lima",
-  "ultima_nota_profe": "Sin notas diarias cargadas aún.",
+  "ultima_actualizacion": "2026-11-23 22:28 Lima",
+  "ultima_nota_profe": "[Error API Gemini: <urlopen error unknown url type: [https>] Esto dijo el profe :Esto es un poco lo que hemos ido comentando el día domingo, ya lo que es con la comunidad, y es que esperamos —también se ve ahí r",
   "divisas": [
     {
       "code": "USD",
@@ -73,7 +73,7 @@
     {
       "id": "MPD",
       "nombre": "MPD (Cobre)",
-      "valor": "$5.561",
+      "valor": "$5.509",
       "flecha": "↓",
       "color": "rojo"
     },
@@ -87,7 +87,7 @@
     {
       "id": "Crudo",
       "nombre": "Crudo (WTI)",
-      "valor": "$80.01",
+      "valor": "$80.16",
       "flecha": "↓",
       "color": "amarillo"
     },
