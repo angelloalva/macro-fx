@@ -111,8 +111,7 @@ def analyze_and_fetch_data(state, input_data=None):
             }
         })
 
-    api_endpoint = clean_url("[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent)")
-    payload_dict = {
+    api_endpoint = "https" + "://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"    payload_dict = {
         "contents": [{"parts": parts}],
         "tools": [{"google_search": {}}]
     }
