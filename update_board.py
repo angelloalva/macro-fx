@@ -61,15 +61,18 @@ def analyze_profe_input(state, input_data):
         return state, True
 
     prompt = f"""
-    Eres un analista cuantitativo de Forex. Analiza el comentario diario y TODAS las imágenes (pizarras) del profesor de trading para actualizar el JSON del tablero.
+    Eres un analista cuantitativo de Forex. Analiza el mensaje y TODAS las imágenes enviadas por el profesor (pizarras de sesgos, capturas de resultados o tablas de "LÍMITES DE EXPECTACIÓN / Rango de Consenso") para actualizar el JSON del tablero.
 
     REGLAS DE ACTUALIZACIÓN:
-    1. Colores válidos únicamente: "verde", "amarillo", "blanco", "naranja", "rojo".
-    2. Actualiza "riesgos_volatilidad" (panel izquierdo principal de la pizarra) extrayendo cada línea que escribe el profesor en su pizarra (ej. divisa: "NZD", evento: "Retail Sales", color: "verde", detalle: "Resultado o punto a vigilar"). Si salen nuevos datos o resultados en el día, añádelos o actualízalos allí con su resultado.
-    3. Sincroniza la columna derecha "divisas" ("Pre Semana") exactamente con los colores y etiquetas (RF, V, C.R, (oil)) que muestra la pizarra o indica el profesor.
-    4. Sincroniza "volatiles" (MPD, MPB, Crudo, VIX) con los colores y flechas que indique el profesor.
-    5. Actualiza "ultima_nota_profe" con un resumen ejecutivo (2-3 líneas) y añade una entrada al inicio de "bitacora_eventos" con fecha/hora, título y detalle.
-    6. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto adicional.
+    1. Colores permitidos únicamente: "verde", "amarillo", "blanco", "naranja", "rojo".
+    2. Si alguna imagen es una tabla de "LÍMITES DE EXPECTACIÓN / Rango de Consenso":
+       - Extrae TODAS las noticias relevantes de cada día (Lunes a Viernes) con su divisa, título y rango exacto en "rango_expectacion".
+       - Coloca "estado": "proxima" para noticias futuras y "estado": "publicada" para días/noticias que ya salieron o tienen resultado.
+    3. Si el profesor reporta el resultado de una noticia que ya salió:
+       - Cambia su "estado" a "publicada" en "eventos", anota el dato real en "resultado" (comparándolo con su "rango_expectacion") y agrégalo también en "riesgos_volatilidad" si está en la pizarra del día.
+    4. Sincroniza "riesgos_volatilidad", "divisas" ("Pre Semana") y "volatiles" con lo que muestre la pizarra o diga el profesor.
+    5. Actualiza "ultima_nota_profe" con un resumen ejecutivo (2-3 líneas).
+    6. Devuelve ÚNICAMENTE el JSON completo válido, sin bloques markdown (```json) ni texto extra.
 
     TEXTO DEL PROFESOR:
     {texto}
