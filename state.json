@@ -1,22 +1,103 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-22 22:00 Lima",
+  "ultima_actualizacion": "2026-11-23 21:15 Lima",
   "ultima_nota_profe": "Sin notas diarias cargadas aún.",
   "divisas": [
-    { "code": "USD", "color": "verde", "tags": ["C.R"], "motivo": "Base: Compra [C.R]. Fed restrictiva (prob. 90-97% alza dic.). Volátiles: Bono 10Y 5.09%, VIX 35.89." },
-    { "code": "JPY", "color": "verde", "tags": ["C.R", "V"], "motivo": "Base: Compra [C.R, V]. BoJ senda alcista (IPC 2.2%). Volátiles: VIX 35.89 impulsa refugio. Adv: COT muy cargado en largo." },
-    { "code": "GBP", "color": "amarillo", "tags": ["RF"], "motivo": "Base: Pref. Compra [RF]. BoE subió a 4.00% (voto 8-1). Riesgo fiscal limita convicción." },
-    { "code": "CHF", "color": "amarillo", "tags": ["C.R"], "motivo": "Base: Pref. Compra [C.R]. Inflación suiza repuntó a 1.5%. Refugio europeo activo por VIX alto." },
-    { "code": "EUR", "color": "blanco", "tags": ["RF"], "motivo": "Base: Neutral [RF]. Estanflación: inflación 4.0% presiona al BCE pero crecimiento débil." },
-    { "code": "CAD", "color": "naranja", "tags": ["(oil)"], "motivo": "Base: Pref. Venta [(oil)]. PIB Q3 estancado (1.3% vs 2.0% BoC). Crudo WTI $83.41 amortigua caída." },
-    { "code": "AUD", "color": "rojo", "tags": ["V"], "motivo": "Base: Venta [V]. RBA frenado tras pérdida de 43,500 empleos; desplome del cobre (-16.17% mensual)." },
-    { "code": "NZD", "color": "rojo", "tags": ["V"], "motivo": "Base: Venta [V]. RBNZ pausado en 2.75% con alerta de estabilidad financiera y debilidad exportadora." }
+    {
+      "code": "USD",
+      "color": "verde",
+      "tags": [
+        "C.R"
+      ],
+      "motivo": "Base: Compra [C.R]. Fed restrictiva (prob. 90-97% alza dic.). Volátiles: Bono 10Y 5.09%, VIX 35.89."
+    },
+    {
+      "code": "JPY",
+      "color": "verde",
+      "tags": [
+        "C.R",
+        "V"
+      ],
+      "motivo": "Base: Compra [C.R, V]. BoJ senda alcista (IPC 2.2%). Volátiles: VIX 35.89 impulsa refugio. Adv: COT muy cargado en largo."
+    },
+    {
+      "code": "GBP",
+      "color": "amarillo",
+      "tags": [
+        "RF"
+      ],
+      "motivo": "Base: Pref. Compra [RF]. BoE subió a 4.00% (voto 8-1). Riesgo fiscal limita convicción."
+    },
+    {
+      "code": "CHF",
+      "color": "amarillo",
+      "tags": [
+        "C.R"
+      ],
+      "motivo": "Base: Pref. Compra [C.R]. Inflación suiza repuntó a 1.5%. Refugio europeo activo por VIX alto."
+    },
+    {
+      "code": "EUR",
+      "color": "blanco",
+      "tags": [
+        "RF"
+      ],
+      "motivo": "Base: Neutral [RF]. Estanflación: inflación 4.0% presiona al BCE pero crecimiento débil."
+    },
+    {
+      "code": "CAD",
+      "color": "naranja",
+      "tags": [
+        "(oil)"
+      ],
+      "motivo": "Base: Pref. Venta [(oil)]. PIB Q3 estancado (1.3% vs 2.0% BoC). Crudo WTI $83.41 amortigua caída."
+    },
+    {
+      "code": "AUD",
+      "color": "rojo",
+      "tags": [
+        "V"
+      ],
+      "motivo": "Base: Venta [V]. RBA frenado tras pérdida de 43,500 empleos; desplome del cobre (-16.17% mensual)."
+    },
+    {
+      "code": "NZD",
+      "color": "rojo",
+      "tags": [
+        "V"
+      ],
+      "motivo": "Base: Venta [V]. RBNZ pausado en 2.75% con alerta de estabilidad financiera y debilidad exportadora."
+    }
   ],
   "volatiles": [
-    { "id": "MPD", "nombre": "MPD (Cobre)", "valor": "$5.485", "flecha": "↓", "color": "rojo" },
-    { "id": "MPB", "nombre": "MPB (BCOM)", "valor": "127.66", "flecha": "↓", "color": "naranja" },
-    { "id": "Crudo", "nombre": "Crudo (WTI)", "valor": "$83.41", "flecha": "↑", "color": "amarillo" },
-    { "id": "VIX", "nombre": "VIX", "valor": "35.89", "flecha": "↑", "color": "verde" }
+    {
+      "id": "MPD",
+      "nombre": "MPD (Cobre)",
+      "valor": "$5.534",
+      "flecha": "↓",
+      "color": "rojo"
+    },
+    {
+      "id": "MPB",
+      "nombre": "MPB (BCOM)",
+      "valor": "127.66",
+      "flecha": "↓",
+      "color": "naranja"
+    },
+    {
+      "id": "Crudo",
+      "nombre": "Crudo (WTI)",
+      "valor": "$79.98",
+      "flecha": "↓",
+      "color": "amarillo"
+    },
+    {
+      "id": "VIX",
+      "nombre": "VIX",
+      "valor": "26.62",
+      "flecha": "↓",
+      "color": "verde"
+    }
   ],
   "eventos": [
     {
