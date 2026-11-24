@@ -1,7 +1,7 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-24 00:11 Lima",
-  "ultima_nota_profe": "[Error API: <urlopen error unknown url type: [https>] Busca en Google Search los resultados reales exactos publicados hoy lunes 23 de noviembre para los PMIs Flash de Manufactura y Servicios de Eurozona (",
+  "ultima_actualizacion": "2026-11-24 00:21 Lima",
+  "ultima_nota_profe": "[Error API: HTTP Error 402: Payment Required]",
   "riesgos_volatilidad": [
     {
       "divisa": "NZD",
@@ -80,7 +80,7 @@
     {
       "id": "MPD",
       "nombre": "MPD",
-      "valor": "$5.505",
+      "valor": "$5.509",
       "flecha": "↓",
       "color": "rojo"
     },
@@ -94,7 +94,7 @@
     {
       "id": "Crudo",
       "nombre": "Crudo",
-      "valor": "$79.56",
+      "valor": "$79.57",
       "flecha": "↓",
       "color": "amarillo"
     },
