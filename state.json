@@ -1,19 +1,21 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-23 22:40 Lima",
-  "ultima_nota_profe": "Límites de Expectación cargados: Lunes PMIs (EUR, GBP, USD), Miércoles CPI AUD + bloque PCE/PIB/Claims USD, Viernes CPI Tokyo JPY.",
+  "ultima_actualizacion": "2026-11-23 23:03 Lima",
+  "ultima_nota_profe": "Pizarra Semana 23/11 y Límites de Expectación cargados. Noticias pendientes en neutral; foco en NZD (Retail Sales) y AUD (PMIs como pista adelantada).",
   "riesgos_volatilidad": [
     {
       "divisa": "NZD",
       "evento": "Retail Sales",
       "color": "verde",
-      "detalle": "Dato clave en pizarra del profesor"
+      "muy_relevante": false,
+      "detalle": "Novedad positiva en pizarra del profesor"
     },
     {
       "divisa": "AUD",
       "evento": "PMIs",
       "color": "amarillo",
-      "detalle": "Dato clave en pizarra del profesor"
+      "muy_relevante": false,
+      "detalle": "Encuesta / pista adelantada (no cambia sesgo BC por sí sola)"
     }
   ],
   "divisas": [
@@ -40,9 +42,9 @@
       "titulo": "Manufacturing & Services PMI EUR M/M",
       "rango_expectacion": "Manuf: 52.1 a 53.1 | Serv: 51.1 a 52.1",
       "color": "blanco",
-      "nota": "Advertencia, no cambia sesgo",
+      "nota": "Encuesta (pista adelantada)",
       "estado": "publicada",
-      "resultado": "Publicado (ver impacto en pizarra)"
+      "resultado": "Publicado sin desviación relevante para BCE"
     },
     {
       "id": "lun_gbp_pmi",
@@ -50,10 +52,10 @@
       "divisa": "GBP",
       "titulo": "Manufacturing & Services PMI GBP M/M",
       "rango_expectacion": "Manuf: 52.1 a 53.4 | Serv: 52.4 a 54.1",
-      "color": "verde",
-      "nota": "Advertencia, no cambia sesgo",
+      "color": "blanco",
+      "nota": "Encuesta (pista adelantada)",
       "estado": "publicada",
-      "resultado": "Publicado (GBP mantiene Compra [RF])"
+      "resultado": "Publicado sin desviación relevante para BoE"
     },
     {
       "id": "lun_usd_pmi",
@@ -61,10 +63,10 @@
       "divisa": "USD",
       "titulo": "Manufacturing & Services PMI USD M/M",
       "rango_expectacion": "Manuf: 53.9 a 55.3 | Serv: 55.1 a 57.0",
-      "color": "verde",
-      "nota": "Advertencia, no cambia sesgo",
+      "color": "blanco",
+      "nota": "Encuesta (pista adelantada)",
       "estado": "publicada",
-      "resultado": "Publicado (USD mantiene Compra)"
+      "resultado": "Publicado sin desviación relevante para Fed"
     },
     {
       "id": "mie_aud_cpi",
@@ -72,8 +74,8 @@
       "divisa": "AUD",
       "titulo": "CPI AUD Y/Y",
       "rango_expectacion": "4.7% a 4.8%",
-      "color": "naranja",
-      "nota": "Advertencia, no cambia sesgo",
+      "color": "blanco",
+      "nota": "Pendiente (Neutral)",
       "estado": "proxima",
       "resultado": null
     },
@@ -83,8 +85,8 @@
       "divisa": "USD",
       "titulo": "GDP Q/Q + Core PCE & Personal Income/Spending USD",
       "rango_expectacion": "GDP: 3.4% a 3.8% | Core PCE M/M: 0.3% (Y/Y: 3.2% a 3.3%) | Income: 0.3%-0.5% | Spending: 0.4%-0.6%",
-      "color": "verde",
-      "nota": "Advertencia, no cambia sesgo (Nivel 1)",
+      "color": "blanco",
+      "nota": "Pendiente (Neutral)",
       "estado": "proxima",
       "resultado": null
     },
@@ -94,8 +96,8 @@
       "divisa": "USD",
       "titulo": "Initial Claims USD",
       "rango_expectacion": "200 K a 202 K",
-      "color": "verde",
-      "nota": "Advertencia, no cambia sesgo",
+      "color": "blanco",
+      "nota": "Pendiente (Neutral)",
       "estado": "proxima",
       "resultado": null
     },
@@ -105,8 +107,8 @@
       "divisa": "JPY",
       "titulo": "CPI Tokyo JPY Y/Y (Headline / Ex-Fresh / Core-Core)",
       "rango_expectacion": "Y/Y: 3.0% a 3.3% | Ex-Fresh: 2.9% a 3.3% | Ex-Fresh & Energy: 2.7% a 2.9%",
-      "color": "verde",
-      "nota": "Advertencia, no cambia sesgo (Nivel 1)",
+      "color": "blanco",
+      "nota": "Pendiente (Neutral)",
       "estado": "proxima",
       "resultado": null
     }
