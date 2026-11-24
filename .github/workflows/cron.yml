@@ -4,16 +4,12 @@ on:
   push:
     paths:
       - 'input_profe.json'
-
-  schedule:
-    - cron: '15 */4 * * 1-5'
-    - cron: '5,35 9 * * 1'
-    - cron: '35 16 * * 2'
-    - cron: '35 0 * * 3'
-    - cron: '32,35 13 * * 3'
-    - cron: '32,35 23 * * 4'
-
   workflow_dispatch:
+  schedule:
+    # Programado automáticamente (+10 min después de cada noticia pendiente)
+    - cron: '40 0 25 11 *' # [AUD] CPI AUD Y/Y (19:30 Lima / 00:30 UTC + 10m)
+    - cron: '40 13 25 11 *' # [USD] GDP + Core PCE + Claims (08:30 Lima / 13:30 UTC + 10m)
+    - cron: '40 23 26 11 *' # [JPY] CPI Tokyo JPY (18:30 Lima / 23:30 UTC + 10m)
 
 permissions:
   contents: write
@@ -22,7 +18,7 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: Descargar repositorio
+      - name: Checkout repositorio
         uses: actions/checkout@v4
 
       - name: Configurar Python
@@ -35,10 +31,10 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python update_board.py
 
-      - name: Guardar cambios en state.json
+      - name: Guardar cambios en state.json y cron.yml
         run: |
-          git config user.name "MacroFX Bot"
-          git config user.email "bot@macrofx.local"
-          git add state.json input_profe.json
-          git diff --staged --quiet || git commit -m "Auto-update tablero Macro FX"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add state.json input_profe.json .github/workflows/cron.yml
+          git diff --quiet && git diff --staged --quiet || git commit -m "Actualización automática Macro FX [skip ci]"
           git push
