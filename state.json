@@ -1,30 +1,30 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-23 22:32 Lima",
-  "ultima_nota_profe": "Pizarra Semana 23/11 cargada: foco en NZD (Retail Sales) y AUD (PMIs). Sesgo alcista en GBP [RF], JPY [V] y USD.",
+  "ultima_actualizacion": "2026-11-23 22:40 Lima",
+  "ultima_nota_profe": "Límites de Expectación cargados: Lunes PMIs (EUR, GBP, USD), Miércoles CPI AUD + bloque PCE/PIB/Claims USD, Viernes CPI Tokyo JPY.",
   "riesgos_volatilidad": [
     {
       "divisa": "NZD",
       "evento": "Retail Sales",
       "color": "verde",
-      "detalle": "Dato clave en pizarra del profesor (vigilar desviación)"
+      "detalle": "Dato clave en pizarra del profesor"
     },
     {
       "divisa": "AUD",
       "evento": "PMIs",
       "color": "amarillo",
-      "detalle": "Dato clave en pizarra del profesor (vigilar actividad)"
+      "detalle": "Dato clave en pizarra del profesor"
     }
   ],
   "divisas": [
-    { "code": "GBP", "color": "verde", "tags": ["RF"], "motivo": "Pizarra Profe: Compra [RF]. Favorecida por proyección de tasas y retorno de foco macro." },
-    { "code": "JPY", "color": "verde", "tags": ["V"], "motivo": "Pizarra Profe: Compra [V]. BoJ en senda alcista." },
-    { "code": "USD", "color": "verde", "tags": [], "motivo": "Pizarra Profe: Compra. Fed restrictiva, foco macro." },
-    { "code": "NZD", "color": "blanco", "tags": [], "motivo": "Pizarra Profe: Neutral. Pendiente de Retail Sales." },
-    { "code": "EUR", "color": "blanco", "tags": [], "motivo": "Pizarra Profe: Neutral. Pendiente de PMIs." },
+    { "code": "GBP", "color": "verde", "tags": ["RF"], "motivo": "Pizarra Profe: Compra [RF]." },
+    { "code": "JPY", "color": "verde", "tags": ["V"], "motivo": "Pizarra Profe: Compra [V]." },
+    { "code": "USD", "color": "verde", "tags": [], "motivo": "Pizarra Profe: Compra." },
+    { "code": "NZD", "color": "blanco", "tags": [], "motivo": "Pizarra Profe: Neutral." },
+    { "code": "EUR", "color": "blanco", "tags": [], "motivo": "Pizarra Profe: Neutral." },
     { "code": "CAD", "color": "naranja", "tags": ["(oil)"], "motivo": "Pizarra Profe: Pref. Venta [(oil)]." },
-    { "code": "AUD", "color": "naranja", "tags": [], "motivo": "Pizarra Profe: Pref. Venta. Pendiente de PMIs." },
-    { "code": "CHF", "color": "rojo", "tags": ["C.R"], "motivo": "Pizarra Profe: Venta [C.R]. Salida de refugio al mejorar sentimiento de riesgo." }
+    { "code": "AUD", "color": "naranja", "tags": [], "motivo": "Pizarra Profe: Pref. Venta." },
+    { "code": "CHF", "color": "rojo", "tags": ["C.R"], "motivo": "Pizarra Profe: Venta [C.R]." }
   ],
   "volatiles": [
     { "id": "MPD", "nombre": "MPD", "valor": "$5.509", "flecha": "↓", "color": "rojo" },
@@ -34,77 +34,80 @@
   ],
   "eventos": [
     {
-      "id": "eur_pmi",
-      "dia": "LUNES 23/11",
-      "hora": "04:00 Lima / 09:00 GMT",
+      "id": "lun_eur_pmi",
+      "dia": "LUNES",
       "divisa": "EUR",
-      "titulo": "PMI Flash Servicios Eurozona (nov.)",
-      "color": "amarillo",
+      "titulo": "Manufacturing & Services PMI EUR M/M",
+      "rango_expectacion": "Manuf: 52.1 a 53.1 | Serv: 51.1 a 52.1",
+      "color": "blanco",
       "nota": "Advertencia, no cambia sesgo",
-      "vigilancia_profe": "Consenso: 48.5 vs 47.5 ant.",
-      "consenso": 48.5,
-      "resultado": null
+      "estado": "publicada",
+      "resultado": "Publicado (ver impacto en pizarra)"
     },
     {
-      "id": "gbp_pmi",
-      "dia": "LUNES 23/11",
-      "hora": "04:30 Lima / 09:30 GMT",
+      "id": "lun_gbp_pmi",
+      "dia": "LUNES",
       "divisa": "GBP",
-      "titulo": "PMI Flash Servicios y Manufactura UK (nov.)",
-      "color": "amarillo",
+      "titulo": "Manufacturing & Services PMI GBP M/M",
+      "rango_expectacion": "Manuf: 52.1 a 53.4 | Serv: 52.4 a 54.1",
+      "color": "verde",
       "nota": "Advertencia, no cambia sesgo",
-      "vigilancia_profe": "Vigilar costos energéticos en servicios.",
-      "consenso": 51.0,
-      "resultado": null
+      "estado": "publicada",
+      "resultado": "Publicado (GBP mantiene Compra [RF])"
     },
     {
-      "id": "cad_macklem",
-      "dia": "MARTES 24/11",
-      "hora": "11:30 Lima / 16:30 GMT",
-      "divisa": "CAD",
-      "titulo": "Discurso Gobernador BoC Tiff Macklem",
-      "color": "naranja",
-      "nota": "Advertencia, no cambia sesgo",
-      "vigilancia_profe": "Si descarta alzas por PIB Q3 débil -> pasar CAD a Rojo.",
-      "consenso": null,
-      "resultado": null
-    },
-    {
-      "id": "aud_cpi",
-      "dia": "MIÉRCOLES 25/11",
-      "hora": "19:30 Lima (Mar) / 00:30 GMT",
-      "divisa": "AUD",
-      "titulo": "IPC Mensual Australia (oct.)",
-      "color": "naranja",
-      "nota": "Advertencia, no cambia sesgo",
-      "vigilancia_profe": "Consenso 4.2% vs 4.3% ant. RBA ya frenó por empleo.",
-      "consenso": 4.2,
-      "resultado": null
-    },
-    {
-      "id": "usd_pce",
-      "dia": "MIÉRCOLES 25/11",
-      "hora": "08:30 Lima / 13:30 GMT",
+      "id": "lun_usd_pmi",
+      "dia": "LUNES",
       "divisa": "USD",
-      "titulo": "Índice Precios PCE Subyacente EE. UU. (oct.) + PIB Q3",
+      "titulo": "Manufacturing & Services PMI USD M/M",
+      "rango_expectacion": "Manuf: 53.9 a 55.3 | Serv: 55.1 a 57.0",
       "color": "verde",
-      "nota": "Advertencia, no cambia sesgo (Nivel 1)",
-      "vigilancia_profe": "Consenso: 0.3% m/m (3.2% a/a). >=0.4% activa 50pb; <=0.1% toma ganancias USD.",
-      "consenso": 0.3,
-      "umbral_bajada": 0.1,
+      "nota": "Advertencia, no cambia sesgo",
+      "estado": "publicada",
+      "resultado": "Publicado (USD mantiene Compra)"
+    },
+    {
+      "id": "mie_aud_cpi",
+      "dia": "MIÉRCOLES",
+      "divisa": "AUD",
+      "titulo": "CPI AUD Y/Y",
+      "rango_expectacion": "4.7% a 4.8%",
+      "color": "naranja",
+      "nota": "Advertencia, no cambia sesgo",
+      "estado": "proxima",
       "resultado": null
     },
     {
-      "id": "jpy_tokyo_cpi",
-      "dia": "JUEVES 26/11",
-      "hora": "18:30 Lima / 23:30 GMT",
-      "divisa": "JPY",
-      "titulo": "IPC Subyacente de Tokio (nov.)",
+      "id": "mie_usd_gdp_pce",
+      "dia": "MIÉRCOLES",
+      "divisa": "USD",
+      "titulo": "GDP Q/Q + Core PCE & Personal Income/Spending USD",
+      "rango_expectacion": "GDP: 3.4% a 3.8% | Core PCE M/M: 0.3% (Y/Y: 3.2% a 3.3%) | Income: 0.3%-0.5% | Spending: 0.4%-0.6%",
       "color": "verde",
       "nota": "Advertencia, no cambia sesgo (Nivel 1)",
-      "vigilancia_profe": "Consenso: 3.0% vs 2.6% ant. <=2.6% detona desarme de largos COT.",
-      "consenso": 3.0,
-      "umbral_bajada": 2.6,
+      "estado": "proxima",
+      "resultado": null
+    },
+    {
+      "id": "mie_usd_claims",
+      "dia": "MIÉRCOLES",
+      "divisa": "USD",
+      "titulo": "Initial Claims USD",
+      "rango_expectacion": "200 K a 202 K",
+      "color": "verde",
+      "nota": "Advertencia, no cambia sesgo",
+      "estado": "proxima",
+      "resultado": null
+    },
+    {
+      "id": "vie_jpy_cpi",
+      "dia": "VIERNES",
+      "divisa": "JPY",
+      "titulo": "CPI Tokyo JPY Y/Y (Headline / Ex-Fresh / Core-Core)",
+      "rango_expectacion": "Y/Y: 3.0% a 3.3% | Ex-Fresh: 2.9% a 3.3% | Ex-Fresh & Energy: 2.7% a 2.9%",
+      "color": "verde",
+      "nota": "Advertencia, no cambia sesgo (Nivel 1)",
+      "estado": "proxima",
       "resultado": null
     }
   ]
