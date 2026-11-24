@@ -1,6 +1,6 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-23 23:54 Lima",
+  "ultima_actualizacion": "2026-11-24 00:03 Lima",
   "ultima_nota_profe": "[Error API: <urlopen error unknown url type: [https>] Busca en Google Search los resultados reales exactos publicados hoy lunes 23 de noviembre para los PMIs Flash de Manufactura y Servicios de Eurozona (",
   "riesgos_volatilidad": [
     {
@@ -94,7 +94,7 @@
     {
       "id": "Crudo",
       "nombre": "Crudo",
-      "valor": "$79.67",
+      "valor": "$79.64",
       "flecha": "↓",
       "color": "amarillo"
     },
