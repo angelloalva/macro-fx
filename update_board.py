@@ -6,8 +6,11 @@ from datetime import datetime, timezone, timedelta
 
 STATE_FILE = "state.json"
 INPUT_PROFE_FILE = "input_profe.json"
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-PROTO = "https" + "://"
+# Limpia espacios, comillas o corchetes accidentales en el Secret de GitHub
+GEMINI_API_KEY = re.sub(r'[\[\]\s"\']', '', os.environ.get("GEMINI_API_KEY", ""))
+
+def clean_url(u):
+    return u.replace("[", "").replace("]", "").strip()
 
 def load_json(path, default=None):
     if os.path.exists(path):
@@ -20,7 +23,7 @@ def save_json(path, data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def fetch_yahoo_price(symbol):
-    url = PROTO + "query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=2d"
+    url = clean_url("https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=2d")
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -108,13 +111,20 @@ def analyze_and_fetch_data(state, input_data=None):
             }
         })
 
-    api_endpoint = PROTO + "[generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=)" + GEMINI_API_KEY
+    api_endpoint = clean_url("[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent)")
     payload_dict = {
         "contents": [{"parts": parts}],
         "tools": [{"google_search": {}}]
     }
     payload = json.dumps(payload_dict).encode("utf-8")
-    req = urllib.request.Request(url=api_endpoint, data=payload, headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(
+        url=api_endpoint,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": GEMINI_API_KEY
+        }
+    )
 
     try:
         with urllib.request.urlopen(req, timeout=75) as resp:
