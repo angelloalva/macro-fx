@@ -6,10 +6,12 @@ on:
       - 'input_profe.json'
   workflow_dispatch:
   schedule:
-    # Programado automáticamente (+10 min después de cada noticia pendiente)
-    - cron: '40 0 25 11 *' # [AUD] CPI AUD Y/Y (19:30 Lima / 00:30 UTC + 10m)
-    - cron: '40 13 25 11 *' # [USD] GDP + Core PCE + Claims (08:30 Lima / 13:30 UTC + 10m)
-    - cron: '40 23 26 11 *' # [JPY] CPI Tokyo JPY (18:30 Lima / 23:30 UTC + 10m)
+    # Ventanas clave post-noticias principales (UTC) — update_board.py solo llama a Gemini si hay noticia vencida +10m
+    - cron: '40 0 * * 1-5'   # 19:40 Lima (Sesión Asia / AUD / NZD / JPY)
+    - cron: '40 9 * * 1-5'   # 04:40 Lima (Sesión Londres / EUR / GBP)
+    - cron: '40 13 * * 1-5'  # 08:40 Lima (Apertura NY / USD / CAD)
+    - cron: '10 15 * * 1-5'  # 10:10 Lima (Datos 10:00 EST / ISM / Confianza)
+    - cron: '10 19 * * 1-5'  # 14:10 Lima (FOMC / Tasas)
 
 permissions:
   contents: write
@@ -31,10 +33,10 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python update_board.py
 
-      - name: Guardar cambios en state.json y cron.yml
+      - name: Guardar cambios en state.json
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add state.json input_profe.json .github/workflows/cron.yml
+          git add state.json input_profe.json
           git diff --quiet && git diff --staged --quiet || git commit -m "Actualización automática Macro FX [skip ci]"
           git push
