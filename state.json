@@ -1,6 +1,6 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-24 18:52 Lima",
+  "ultima_actualizacion": "2026-11-24 22:00 Lima",
   "ultima_nota_profe": "[Error API: HTTP Error 402: Payment Required]",
   "riesgos_volatilidad": [
     {
@@ -80,7 +80,7 @@
     {
       "id": "MPD",
       "nombre": "MPD",
-      "valor": "$5.477",
+      "valor": "$5.468",
       "flecha": "↓",
       "color": "rojo"
     },
@@ -94,7 +94,7 @@
     {
       "id": "Crudo",
       "nombre": "Crudo",
-      "valor": "$81.66",
+      "valor": "$80.8",
       "flecha": "↑",
       "color": "amarillo"
     },
