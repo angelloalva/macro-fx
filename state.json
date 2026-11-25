@@ -1,6 +1,6 @@
 {
   "semana": "23/11",
-  "ultima_actualizacion": "2026-11-25 04:03 Lima",
+  "ultima_actualizacion": "2026-11-25 14:34 Lima",
   "ultima_nota_profe": "[Error API: HTTP Error 402: Payment Required]",
   "riesgos_volatilidad": [
     {
@@ -80,7 +80,7 @@
     {
       "id": "MPD",
       "nombre": "MPD",
-      "valor": "$5.409",
+      "valor": "$5.471",
       "flecha": "↑",
       "color": "rojo"
     },
@@ -94,14 +94,14 @@
     {
       "id": "Crudo",
       "nombre": "Crudo",
-      "valor": "$81.3",
-      "flecha": "↓",
+      "valor": "$83.7",
+      "flecha": "↑",
       "color": "amarillo"
     },
     {
       "id": "VIX",
       "nombre": "VIX",
-      "valor": "27.76",
+      "valor": "28.06",
       "flecha": "↑",
       "color": "amarillo"
     }
